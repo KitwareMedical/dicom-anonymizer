@@ -1,0 +1,1 @@
+from .simpledicomanonymizer import *
