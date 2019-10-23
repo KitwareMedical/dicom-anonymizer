@@ -3,12 +3,11 @@
 # Edern Haumont <edern.haumont@kitware.com>
 # license : MIT
 
-from importlib import import_module
 import re
 import pydicom
 import sys
 
-from DicomFields import *
+from .dicomfields import *
 
 
 # Default anonymization functions
