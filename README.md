@@ -53,8 +53,8 @@ Installing this package will also install an executable named `dicom-anonymizer`
 This package allows to anonymize a selection of DICOM field (defined or overrided). The way on how the DICOM fields are anonymized can also be overrided.
 
 ```
-InputFilePath = Full path to a single DICOM image
-OutputFilePath = Full path to the anonymized DICOM image
+InputFilePath = Full path to a single DICOM image or to a folder which contains dicom files
+OutputFilePath = Full path to the anonymized DICOM image or to a folder
 ActionName = Defined an action name that will be applied to the DICOM tag. 
 ```
 

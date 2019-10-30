@@ -8,23 +8,29 @@ from .simpledicomanonymizer import *
 
 def main():
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('input', help='Path to the input dicom file')
-    parser.add_argument('output', help='Path to the output dicom file')
+    parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
+    parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
     parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tags list')
     parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
-    parser.add_argument('--inputFolder', action='store', help='Path to a folder that contains DICOM file to be anonymized')
-    parser.add_argument('--outputFolder', action='store', help='Path to a folder that contains anonymized DICOM file')
     args = parser.parse_args()
 
     # Get input arguments
-    InputFilePath = args.input
-    OutputFilePath = args.output
+    InputPath = args.input
+    OutputPath = args.output
     InputFolder = ''
     OutputFolder = ''
-    if args.inputFolder and args.outputFolder:
-        InputFolder = args.inputFolder
-        OutputFolder = args.outputFolder
 
+    if os.path.isdir(InputPath):
+        InputFolder = InputPath
+
+    if os.path.isdir(OutputPath):
+        OutputFolder = OutputPath
+        if InputFolder == '':
+            OutputPath = OutputFolder + os.path.basename(InputPath)
+
+    if InputFolder != '' and OutputFolder == '':
+        print('Error, please set an output folder path with an input folder path')
+        return
     # Create a new actions' dictionary from parameters
     newAnonymizationActions = ''
     if args.t:
@@ -57,8 +63,8 @@ def main():
     inputFilesList = []
     outputFilesList = []
     if InputFolder == '':
-        inputFilesList.append(InputFilePath)
-        outputFilesList.append(OutputFilePath)
+        inputFilesList.append(InputPath)
+        outputFilesList.append(OutputPath)
     else:
         files = os.listdir(InputFolder)
         for fileName in files:
@@ -66,5 +72,5 @@ def main():
             outputFilesList.append(OutputFolder + '\\' + fileName)
 
     for cpt in range(len(inputFilesList)):
-        print('Process ' + str(cpt) + '//' + str(len(inputFilesList)))
+        print('Process ' + str(cpt + 1) + '//' + str(len(inputFilesList)))
         anonymizeDICOMFile(inputFilesList[cpt], outputFilesList[cpt], newAnonymizationActions)
