@@ -7,13 +7,20 @@ import re
 import pydicom
 import sys
 
+from random import randint
+
 from .dicomfields import *
 
+
+dictionary = {}
 
 # Default anonymization functions
 
 def replaceElementUID(element):
-    element.value = re.sub(r'\d', '1', element.value)
+    if element.value not in dictionary:
+        new_chars = [str(randint(0, 9)) if char.isalnum() else char for char in element.value]
+        dictionary[element.value] = ''.join(new_chars)
+    element.value = dictionary.get(element.value)
 
 
 def replaceElementDate(element):
@@ -170,7 +177,6 @@ def deleteOrEmptyOrReplaceUID(dataset, tag):
         else:
             emptyElement(element)
 
-
 # Generation functions
 
 def generateActions(tagList, action):
@@ -203,7 +209,6 @@ def anonymizeDICOMFile(inFile, outFile, dictionary = ''):
     :param outFile: File path or file-like object to write to
     :param dictionary: add more tag's actions
     """
-
     currentAnonymizationActions = initializeActions()
 
     if dictionary != '':
