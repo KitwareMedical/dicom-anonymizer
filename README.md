@@ -1,9 +1,8 @@
 # DicomAnonymizer
----
 
 Python package to anonymize DICOM files.
 The default behaviour of this package is to anonymize DICOM fields referenced in [dicomfields](dicomanonymizer/dicomfields.py).
-More information about dicom fields for anonymization can be found [here](http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1)
+More information about dicom fields for anonymization can be found [here](http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1).
 Dicom fields are separated into different groups. Each groups will be anonymized in a different way.
 
 | Group | Action | Action definition |
@@ -21,7 +20,6 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 
 
 # How to build it ?
----
 
 The sources files can be packaged by using:
 `python .\setup.py bdist_wheel`
@@ -34,7 +32,6 @@ Installing this package will also install an executable named `dicom-anonymizer`
 
 
 # How to use it ?
----
 
 This package allows to anonymize a selection of DICOM field (defined or overrided).
 The way on how the DICOM fields are anonymized can also be overrided.
@@ -49,7 +46,9 @@ The way on how the DICOM fields are anonymized can also be overrided.
 ## Default behaviour
 
 **Executable**:
-`dicom-anonymizer InputFilePath OutputFilePath`
+```python
+dicom-anonymizer InputFilePath OutputFilePath
+```
 
 **Code**:
 Create file anonymizerUser.py which contains :
@@ -84,11 +83,12 @@ For example, the default behavior of the patient's ID is to be replaced by an em
 ```python
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0010, 0x0020)' keep
 ```
-This command will override the default behavior executed on this tag
+This command will override the default behavior executed on this tag and the patient's ID will be kept.
 
 
 
 ## Custom rules with dictionary file
+
 Instead of having a big command line with several new actions, you can create your own dictionary by creating a json file `dictionary.json` :
 ```json
 {
@@ -108,6 +108,7 @@ dicom-anonymizer InputFilePath OutputFilePath --dictionary dictionary.json
 ```python
 python anonymizerUser.py InputFilePath OutputFilePath --dictionary dictionary.json
 ```
+
 
 
 ## Custom actions from dictionary file
@@ -166,7 +167,6 @@ python anonymizerUser.py InputFilePath OutputFilePath --dictionary dictionary.js
 
 
 # Actions list
----
 
 | Action | Action definition |
 | --- | --- |
