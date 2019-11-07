@@ -6,7 +6,7 @@ import re
 
 from .simpledicomanonymizer import *
 
-def main():
+def main(map = {}):
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
@@ -31,7 +31,8 @@ def main():
     if InputFolder != '' and OutputFolder == '':
         print('Error, please set an output folder path with an input folder path')
         return
-    # Create a new actions' dictionary from parameters
+
+    # Create a new actions' dictionary from input parameters
     newAnonymizationActions = ''
     if args.t:
         numberOfNewTagsActions = len(args.t)
@@ -54,9 +55,15 @@ def main():
     if args.dictionary:
         with open(args.dictionary) as json_file:
             data = json.load(json_file)
+            cpt = 0
             for k, v in data.items():
                 l = [ast.literal_eval(k)]
-                newAnonymizationActions.update(generateActions(l, eval(v)))
+                actionFunction = map[v] if v in map else eval(v)
+                if cpt == 0:
+                    newAnonymizationActions = generateActions(l, actionFunction)
+                else:
+                    newAnonymizationActions.update(generateActions(l, actionFunction))
+                cpt += 1
 
 
     # Generate list of input file if a folder has been set
