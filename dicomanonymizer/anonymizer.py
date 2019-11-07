@@ -68,8 +68,8 @@ def main():
     else:
         files = os.listdir(InputFolder)
         for fileName in files:
-            inputFilesList.append(InputFolder + '\\' + fileName)
-            outputFilesList.append(OutputFolder + '\\' + fileName)
+            inputFilesList.append(InputFolder + '/' + fileName)
+            outputFilesList.append(OutputFolder + '/' + fileName)
 
     for cpt in range(len(inputFilesList)):
         print('Process ' + str(cpt + 1) + '//' + str(len(inputFilesList)))
