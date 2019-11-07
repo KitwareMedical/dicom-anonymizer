@@ -3,6 +3,7 @@ import ast
 import json
 import os
 import re
+import tqdm
 
 from .simpledicomanonymizer import *
 
@@ -78,6 +79,10 @@ def main(map = {}):
             inputFilesList.append(InputFolder + '/' + fileName)
             outputFilesList.append(OutputFolder + '/' + fileName)
 
+    progressBar = tqdm.tqdm(total=len(inputFilesList))
     for cpt in range(len(inputFilesList)):
-        print('Process ' + str(cpt + 1) + '//' + str(len(inputFilesList)))
+        # print('Process ' + str(cpt + 1) + '//' + str(len(inputFilesList)))
         anonymizeDICOMFile(inputFilesList[cpt], outputFilesList[cpt], newAnonymizationActions)
+        progressBar.update(1)
+
+    progressBar.close()
