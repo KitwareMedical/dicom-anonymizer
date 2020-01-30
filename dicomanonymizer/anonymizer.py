@@ -31,9 +31,9 @@ def main(map = {}):
 
     if InputFolder != '' and OutputFolder == '':
         print('Error, please set an output folder path with an input folder path')
-        return
+        sys.exit();
 
-    # Create a new actions' dictionary from input parameters
+    # Create a new actions' dictionary from parameters
     newAnonymizationActions = ''
     if args.t:
         numberOfNewTagsActions = len(args.t)
