@@ -1,7 +1,6 @@
 # authors :
 # Guillaume Lemaitre <g.lemaitre58@gmail.com>,
 # Edern Haumont <edern.haumont@kitware.com>
-# license : MIT
 
 import re
 import pydicom
