@@ -19,12 +19,15 @@ from os import path
 # with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 #     long_description = f.read()
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
-    name='DicomAnonymizer',  # Required
-    version='0.0.1',  # Required
+    name='dicom_anonymizer',  # Required
+    version='1.0.0',  # Required
     description='Program to anonymize dicom files with default and custom rules', # Optional
-   # long_description=long_description,  # Optional
-   # long_description_content_type='text/markdown',  # Optional (see note above)
+    long_description=long_description,  # Optional
+    long_description_content_type='text/markdown',  # Optional (see note above)ls
     url='https://gitlab.kitware.io/kitware/DicomAnonymizer.git',  # Optional
     author='Guillaume Lemaitre, Edern Haumont, Laurenn Lam',  # Optional
     author_email='laurenn.lam@kitware.com',  # Optional
@@ -45,7 +48,7 @@ setup(
     # project page. What does your project relate to?
     #
     # Note that this is a string of words separated by whitespace, not a list.
-    keywords='dicom anonymizer',  # Optional
+    keywords='dicom anonymizer medical',  # Optional
 
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
