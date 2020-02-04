@@ -1,8 +1,10 @@
 # DicomAnonymizer
 
 Python package to anonymize DICOM files.
+The anonymization answer to the standard . More information about dicom fields for anonymization can be found [here](http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1).
+
 The default behaviour of this package is to anonymize DICOM fields referenced in [dicomfields](dicomanonymizer/dicomfields.py).
-More information about dicom fields for anonymization can be found [here](http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1).
+
 Dicom fields are separated into different groups. Each groups will be anonymized in a different way.
 
 | Group | Action | Action definition |
@@ -35,45 +37,31 @@ Installing this package will also install an executable named `dicom-anonymizer`
 
 This package allows to anonymize a selection of DICOM field (defined or overrided).
 The way on how the DICOM fields are anonymized can also be overrided.
-```
-[required] InputFilePath = Full path to a single DICOM image or to a folder which contains dicom files
-[required] OutputFilePath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
-[optional] ActionName = Defined an action name that will be applied to the DICOM tag.
-[optional] Dictionary = Path to a JSON file which defines actions that will be applied on specific dicom tags (see below)
-```
+
+**[required]** InputPath = Full path to a single DICOM image or to a folder which contains dicom files
+**[required]** OutputPath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
+**[optional] **ActionName = Defined an action name that will be applied to the DICOM tag.
+**[optional]** Dictionary = Path to a JSON file which defines actions that will be applied on specific dicom tags (see below)
+
 
 
 ## Default behaviour
 
-**Executable**:
-```python
-dicom-anonymizer InputFilePath OutputFilePath
-```
+You can use the default anonymization behaviour describe above.
 
-**Code**:
-Create file anonymizerUser.py which contains :
 ```python
-import dicomanonymizer.anonymizer
-dicomanonymizer.anonymizer.main()
-```
-Call this file with arguments :
-```python
-python anonymizerUser.py InputFilePath OutputFilePath
+dicom-anonymizer Input Output
 ```
 
 
 
 ## Custom rules
 You can manually add new rules in order to have different behaviors with certain tags.
-This will allow to override default rules :
+This will allow you to override default rules :
 
 **Executable**:
 ```python
 dicom-anonymizer InputFilePath OutputFilePath -t '(0x0001, 0x0001)' ActionName -t '(0x0001, 0x0005)' ActionName2
-```
-**Code**
-```python
-python anonymizer.py InputFilePath OutputFilePath -t '(0x0001, 0x0001)' ActionName -t '(0x0001, 0x0005)' ActionName2
 ```
 This will apply the `ActionName` to the tag `'(0x0001, 0x0001)'` and `ActionName2` to `'(0x0001, 0x0005)'`
 
@@ -125,6 +113,7 @@ If you use the file anonymizer.py, then you can add custom actions:
 Then, modify your file anonymizerUser.py :
 ```python
 import dicomanonymizer.anonymizer
+
 # Functions need to have in input a dataset and a tag
 def ActionNameNotReferenced(dataset, tag):
     # Extract the element from the dataset :
@@ -137,33 +126,22 @@ def ActionNameNotReferenced1(dataset, tag):
 def ActionNameNotReferenced2(dataset, tag):
 	print('custom action 2')
 
-# Define the map of the function
-map = {
-    "ActionNameNotReferenced": ActionNameNotReferenced,
-    "ActionNameNotReferenced1": ActionNameNotReferenced1,
-    "ActionNameNotReferenced2": ActionNameNotReferenced2
+actionsTagMap = {
+	(0x0001, 0x0001): "keep", #will use the default method in the dicom anonymizer
+	(0x0002, 0x0002): ActionNameNotReferenced,
+	(0x0003, 0x0003): ActionNameNotReferenced2
 }
 
+# Generate a custom dictionary that will be override the default one
+actionsMap = dicomanonymizer.anonymizer.generateActionsDictionary(actionsTagMap)
+
 # Send the map to the main function
-dicomanonymizer.anonymizer.main(map)
+dicomanonymizer.anonymizer.anonymize(actionsMap)
 ```
 
 In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
 - A dictionary which map your functions to a string
-- Pass the map in argument of the main function
-This is required to create and pass a map because the file anonymizer.py doesn't know the functions defined in your own script.
-
-**Code**
-```python
-python anonymizerUser.py InputFilePath OutputFilePath --dictionary dictionary.json
-```
-
-**Executable**
-:warning: This won't work if you use the executable because the package doesn't know the custom actions
-```python
-python anonymizerUser.py InputFilePath OutputFilePath --dictionary dictionary.json
-```
 
 
 # Actions list
