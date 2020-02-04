@@ -88,15 +88,9 @@ Instead of having a big command line with several new actions, you can create yo
 ```
 Same as before, the `ActionName` has to be defined in the [actions list](#actions-list).
 
-**Executable**
 ```python
 dicom-anonymizer InputFilePath OutputFilePath --dictionary dictionary.json
 ```
-**Code**
-```python
-python anonymizerUser.py InputFilePath OutputFilePath --dictionary dictionary.json
-```
-
 
 
 ## Custom actions from dictionary file

@@ -47,7 +47,7 @@ def anonymize(inputPath, outputPath, anonymizationActions):
 def generateActionsDictionary(mapActionTag, definedActionMap = {}):
     generatedMap = {}
     cpt = 0
-    for tag in mapActionTag.iterkeys():
+    for tag in mapActionTag:
         test = [tag]
         action = mapActionTag[tag]
 
