@@ -178,11 +178,27 @@ def deleteOrEmptyOrReplaceUID(dataset, tag):
 
 # Generation functions
 
+actionsMapNameFunctions = {
+    "replace": replace,
+    "empty": empty,
+    "delete": delete,
+    "replaceUID": replaceUID,
+    "emptyOrReplace": emptyOrReplace,
+    "deleteOrEmpty": deleteOrEmpty,
+    "deleteOrReplace": deleteOrReplace,
+    "deleteOrEmptyOrReplace": deleteOrEmptyOrReplace,
+    "deleteOrEmptyOrReplaceUID": deleteOrEmptyOrReplaceUID,
+    "keep": keep
+}
+
 def generateActions(tagList, action):
     """Generate a dictionnary using list values as tag and assign the same value to all
     :type tagList: list
     """
-    return {tag: action for tag in tagList}
+    finalAction = action
+    if not callable(action):
+        finalAction = actionsMapNameFunctions[action] if action in actionsMapNameFunctions else keep
+    return {tag: finalAction for tag in tagList}
 
 
 def initializeActions():
