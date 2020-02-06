@@ -137,6 +137,13 @@ In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
 - A dictionary which map your functions to a string
 
+# Overrides actions for default tags
+You can have the need to keep some tags, for example UID. Then, instead of replace it (`replaceUID` action) then you can override it :
+```
+UIDActionMap = dicomanonymizer.simpledicomanonymizer.generateActions(dicomanonymizer.dicomfields.U_TAGS, "keep")
+dicomanonymizer.anonymizer.anonymize(inFile, outFile, actionsMap)
+```
+All the listed actions below can be used with `generateActions` function by using a string. If the second parameter of the `generateActions` actions is a string and doesn't belong to the actions list, then the default behaviour will be to keep the tag.
 
 # Actions list
 
