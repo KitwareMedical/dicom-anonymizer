@@ -1,7 +1,3 @@
-# authors :
-# Guillaume Lemaitre <g.lemaitre58@gmail.com>,
-# Edern Haumont <edern.haumont@kitware.com>
-
 import re
 import pydicom
 import sys

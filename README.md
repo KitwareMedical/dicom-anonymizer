@@ -162,3 +162,5 @@ All the listed actions below can be used with `generateActions` function by usin
 
 
 ** VR: Value Representation
+
+Work originally done by Edern Haumont

@@ -29,7 +29,7 @@ setup(
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional (see note above)ls
     url='https://gitlab.kitware.io/kitware/DicomAnonymizer.git',  # Optional
-    author='Guillaume Lemaitre, Edern Haumont, Laurenn Lam',  # Optional
+    author='Laurenn Lam',  # Optional
     author_email='laurenn.lam@kitware.com',  # Optional
 
     # Classifiers help users find your project by categorizing it.
