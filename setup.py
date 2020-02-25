@@ -28,7 +28,7 @@ setup(
     description='Program to anonymize dicom files with default and custom rules', # Optional
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional (see note above)ls
-    url='https://gitlab.kitware.io/kitware/DicomAnonymizer.git',  # Optional
+    url='https://github.com/KitwareMedical/dicom-anonymizer',  # Optional
     author='Laurenn Lam',  # Optional
     author_email='laurenn.lam@kitware.com',  # Optional
 
