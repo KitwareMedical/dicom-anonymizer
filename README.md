@@ -40,7 +40,7 @@ The way on how the DICOM fields are anonymized can also be overrided.
 
 **[required]** InputPath = Full path to a single DICOM image or to a folder which contains dicom files
 **[required]** OutputPath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
-**[optional] **ActionName = Defined an action name that will be applied to the DICOM tag.
+**[optional]** ActionName = Defined an action name that will be applied to the DICOM tag.
 **[optional]** Dictionary = Path to a JSON file which defines actions that will be applied on specific dicom tags (see below)
 
 
@@ -57,7 +57,7 @@ dicom-anonymizer Input Output
 
 ## Custom rules
 You can manually add new rules in order to have different behaviors with certain tags.
-This will allow you to override default rules :
+This will allow you to override default rules:
 
 **Executable**:
 ```python
@@ -93,57 +93,63 @@ dicom-anonymizer InputFilePath OutputFilePath --dictionary dictionary.json
 ```
 
 
-## Custom actions from dictionary file
+## Custom/overrides actions
 
-If you use the file anonymizer.py, then you can add custom actions:
-```json
-{
-    "(0x0002, 0x0002)": "ActionNameNotReferenced",
-    "(0x0003, 0x0003)": "ActionNameNotReferenced",
-    "(0x0004, 0x0004)": "ActionNameNotReferenced1",
-    "(0x0005, 0x0005)": "ActionNameNotReferenced2"
-}
-```
-Then, modify your file anonymizerUser.py :
+Here is a small example which keep all metadata but update the series description
+by adding a suffix passed as a parameter.
 ```python
-import dicomanonymizer.anonymizer
+import argparse
+from dicomanonymizer import *
 
-# Functions need to have in input a dataset and a tag
-def ActionNameNotReferenced(dataset, tag):
-    # Extract the element from the dataset :
-    element = dataset.get(tag)
-    # You can update the value as here :
-    element.value = ''
-	print('custom action')
-def ActionNameNotReferenced1(dataset, tag):
-	print('custom action 1')
-def ActionNameNotReferenced2(dataset, tag):
-	print('custom action 2')
+def main():
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
+    parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
+    parser.add_argument('--suffix', action='store', help='Suffix that will be added at the end of series description')
+    args = parser.parse_args()
 
-actionsTagMap = {
-	(0x0001, 0x0001): "keep", #will use the default method in the dicom anonymizer
-	(0x0002, 0x0002): ActionNameNotReferenced,
-	(0x0003, 0x0003): ActionNameNotReferenced2
-}
+    InputPath = args.input
+    OutputPath = args.output
 
-# Generate a custom dictionary that will be override the default one
-actionsMap = dicomanonymizer.anonymizer.generateActionsDictionary(actionsTagMap)
+    dictionary = {}
 
-# Send the map to the main function
-dicomanonymizer.anonymizer.anonymize(actionsMap)
+    def setupSeriesDescription(dataset, tag):
+        element = dataset.get(tag)
+        if element is not None:
+            element.value = element.value + '-' + args.suffix
+
+    # Store all tags into one array and setup the action in
+    # order to keep these value as it is
+    # All tags are defined on file dicomfields.py
+    allTags = []
+    allTags.extend(D_TAGS)
+    allTags.extend(Z_TAGS)
+    allTags.extend(X_TAGS)
+    allTags.extend(U_TAGS)
+    allTags.extend(Z_D_TAGS)
+    allTags.extend(X_Z_TAGS)
+    allTags.extend(X_D_TAGS)
+    allTags.extend(X_Z_D_TAGS)
+    allTags.extend(X_Z_U_STAR_TAGS)
+
+    # the 'keep' method is already defined into the dicom-anonymizer
+    # It will overrides the default behaviour
+    for i in allTags:
+        dictionary[i] = keep
+
+    if args.suffix:
+        dictionary[(0x0008, 0x103E)] = setupSeriesDescription
+
+    # Launch the anonymization
+    anonymize(InputPath, OutputPath, dictionary)
+
+if __name__ == "__main__":
+    main()
 ```
 
 In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
-- A dictionary which map your functions to a string
-
-# Overrides actions for default tags
-You can have the need to keep some tags, for example UID. Then, instead of replace it (`replaceUID` action) then you can override it :
-```
-UIDActionMap = dicomanonymizer.simpledicomanonymizer.generateActions(dicomanonymizer.dicomfields.U_TAGS, "keep")
-dicomanonymizer.anonymizer.anonymize(inFile, outFile, actionsMap)
-```
-All the listed actions below can be used with `generateActions` function by using a string. If the second parameter of the `generateActions` actions is a string and doesn't belong to the actions list, then the default behaviour will be to keep the tag.
+- A dictionary which map your functions to a tag
 
 # Actions list
 
