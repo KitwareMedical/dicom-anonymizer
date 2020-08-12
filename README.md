@@ -18,7 +18,7 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 | X_D_TAGS | deleteOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_Z_D_TAGS | deleteOrEmptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_Z_U_STAR_TAGS | deleteOrEmptyOrReplaceUID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR**|
-
+| ALL_TAGS | | Contains all previous defined tags
 
 
 # How to build it ?
@@ -118,23 +118,10 @@ def main():
         if element is not None:
             element.value = element.value + '-' + args.suffix
 
-    # Store all tags into one array and setup the action in
-    # order to keep these value as it is
-    # All tags are defined on file dicomfields.py
-    allTags = []
-    allTags.extend(D_TAGS)
-    allTags.extend(Z_TAGS)
-    allTags.extend(X_TAGS)
-    allTags.extend(U_TAGS)
-    allTags.extend(Z_D_TAGS)
-    allTags.extend(X_Z_TAGS)
-    allTags.extend(X_D_TAGS)
-    allTags.extend(X_Z_D_TAGS)
-    allTags.extend(X_Z_U_STAR_TAGS)
-
+    # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
     # It will overrides the default behaviour
-    for i in allTags:
+    for i in ALL_TAGS:
         dictionary[i] = keep
 
     if args.suffix:
