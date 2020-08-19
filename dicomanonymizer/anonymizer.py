@@ -85,17 +85,34 @@ def main(definedActionMap = {}):
         numberOfNewTagsActions = len(args.t)
         if numberOfNewTagsActions > 0:
             for i in range(numberOfNewTagsActions):
-                actionName = args.t[i].pop()
-                if len(args.t[i]) == 0:
+                currentTagParameters = args.t[i]
+
+                nbParameters = len(currentTagParameters)
+                if nbParameters == 0:
                     continue
-                tagsList = []
-                for tag in args.t[i]:
-                    tagsList.append(ast.literal_eval(tag))
+
+                options = None
+                actionName = currentTagParameters[1]
+
+                # Means that we are in regexp mode
+                if nbParameters == 4:
+                    options = {
+                        'find': currentTagParameters[2],
+                        'replace': currentTagParameters[3]
+                    }
+
+                tagsList = [ast.literal_eval(currentTagParameters[0])]
+
+                action = eval(actionName)
+                # When generateActions is called and we have options, we don't want use regexp
+                # as an action but we want to call it to generate a new method
+                if options is not None:
+                    action = actionName
 
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(tagsList, eval(actionName))
+                    newAnonymizationActions = generateActions(tagsList, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(tagsList, eval(actionName)))
+                    newAnonymizationActions.update(generateActions(tagsList, action, options))
                 cpt += 1
 
     # Read an existing dictionary

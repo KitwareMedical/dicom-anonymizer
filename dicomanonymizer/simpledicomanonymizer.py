@@ -9,6 +9,19 @@ from .dicomfields import *
 
 dictionary = {}
 
+# Regexp function
+
+def regexp(options):
+    def applyRegexp(dataset, tag):
+        """
+        Apply a regexp to the dataset
+        """
+        element = dataset.get(tag)
+        if element is not None:
+            element.value = re.sub(find, replace, element.value)
+
+    return applyRegexp
+
 # Default anonymization functions
 
 def replaceElementUID(element):
@@ -184,15 +197,22 @@ actionsMapNameFunctions = {
     "deleteOrReplace": deleteOrReplace,
     "deleteOrEmptyOrReplace": deleteOrEmptyOrReplace,
     "deleteOrEmptyOrReplaceUID": deleteOrEmptyOrReplaceUID,
-    "keep": keep
+    "keep": keep,
+    "regexp": regexp
 }
 
-def generateActions(tagList, action):
+# -t regexp="find=hfuiezhfeuzifzreplace=nfsdkjnfjdss"
+# def regexp(options):
+
+def generateActions(tagList, action, options=None):
     """Generate a dictionnary using list values as tag and assign the same value to all
     :type tagList: list
     """
     finalAction = action
-    if not callable(action):
+    if options is not None:
+        print('option')
+        finalAction = actionsMapNameFunctions[action](options)
+    elif not callable(action):
         finalAction = actionsMapNameFunctions[action] if action in actionsMapNameFunctions else keep
     return {tag: finalAction for tag in tagList}
 
