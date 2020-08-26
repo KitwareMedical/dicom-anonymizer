@@ -18,7 +18,7 @@ def regexp(options):
         """
         element = dataset.get(tag)
         if element is not None:
-            element.value = re.sub(find, replace, element.value)
+            element.value = re.sub(options['find'], options['replace'], element.value)
 
     return applyRegexp
 
@@ -201,19 +201,15 @@ actionsMapNameFunctions = {
     "regexp": regexp
 }
 
-# -t regexp="find=hfuiezhfeuzifzreplace=nfsdkjnfjdss"
-# def regexp(options):
-
 def generateActions(tagList, action, options=None):
     """Generate a dictionnary using list values as tag and assign the same value to all
     :type tagList: list
     """
     finalAction = action
-    if options is not None:
-        print('option')
-        finalAction = actionsMapNameFunctions[action](options)
-    elif not callable(action):
+    if not callable(action):
         finalAction = actionsMapNameFunctions[action] if action in actionsMapNameFunctions else keep
+    if options is not None:
+        finalAction = finalAction(options)
     return {tag: finalAction for tag in tagList}
 
 

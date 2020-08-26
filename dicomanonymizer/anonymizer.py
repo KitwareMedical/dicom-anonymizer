@@ -21,7 +21,7 @@ def anonymize(inputPath, outputPath, anonymizationActions):
             outputPath = OutputFolder + os.path.basename(inputPath)
 
     if InputFolder != '' and OutputFolder == '':
-        print('Error, please set an output folder path with an input folder path')
+        print('Error, please set a correct output folder path')
         sys.exit()
 
     # Generate list of input file if a folder has been set
@@ -71,7 +71,10 @@ def main(definedActionMap = {}):
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
-    parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tags list')
+    parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tag.'\
+    '\'regexp\' action takes two arguments: '\
+        '1. regexp to find substring '\
+        '2. the string that will replace the previous found string')
     parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
     args = parser.parse_args()
 
@@ -97,8 +100,8 @@ def main(definedActionMap = {}):
                 # Means that we are in regexp mode
                 if nbParameters == 4:
                     options = {
-                        'find': currentTagParameters[2],
-                        'replace': currentTagParameters[3]
+                        "find": currentTagParameters[2],
+                        "replace": currentTagParameters[3]
                     }
 
                 tagsList = [ast.literal_eval(currentTagParameters[0])]
