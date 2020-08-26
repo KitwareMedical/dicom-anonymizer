@@ -122,13 +122,22 @@ def main(definedActionMap = {}):
     if args.dictionary:
         with open(args.dictionary) as json_file:
             data = json.load(json_file)
-            for k, v in data.items():
-                l = [ast.literal_eval(k)]
-                actionFunction = definedActionMap[v] if v in definedActionMap else eval(v)
+            for key, value in data.items():
+                actionName = value
+                options = None
+                if type(value) is dict:
+                    actionName = value['action']
+                    options = {
+                        "find": value['find'],
+                        "replace" : value['replace']
+                    }
+
+                l = [ast.literal_eval(key)]
+                action = definedActionMap[actionName] if actionName in definedActionMap else eval(actionName)
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(l, actionFunction)
+                    newAnonymizationActions = generateActions(l, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(l, actionFunction))
+                    newAnonymizationActions.update(generateActions(l, action, options))
                 cpt += 1
 
     # Launch the anonymization
