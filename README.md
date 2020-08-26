@@ -38,10 +38,10 @@ Installing this package will also install an executable named `dicom-anonymizer`
 This package allows to anonymize a selection of DICOM field (defined or overrided).
 The way on how the DICOM fields are anonymized can also be overrided.
 
-**[required]** InputPath = Full path to a single DICOM image or to a folder which contains dicom files
-**[required]** OutputPath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
-**[optional]** ActionName = Defined an action name that will be applied to the DICOM tag.
-**[optional]** Dictionary = Path to a JSON file which defines actions that will be applied on specific dicom tags (see below)
+- **[required]** InputPath = Full path to a single DICOM image or to a folder which contains dicom files
+- **[required]** OutputPath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
+- [optional] ActionName = Defined an action name that will be applied to the DICOM tag.
+- [optional] Dictionary = Path to a JSON file which defines actions that will be applied on specific dicom tags (see below)
 
 
 
@@ -67,12 +67,16 @@ This will apply the `ActionName` to the tag `'(0x0001, 0x0001)'` and `ActionName
 
 **Note**: ActionName has to be defined in [actions list](#actions-list)
 
-For example, the default behavior of the patient's ID is to be replaced by an empty or null value. If you want to keep this value, then you'll have to run :
+Example 1: The default behavior of the patient's ID is to be replaced by an empty or null value. If you want to keep this value, then you'll have to run :
 ```python
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0010, 0x0020)' keep
 ```
 This command will override the default behavior executed on this tag and the patient's ID will be kept.
 
+Example 2: We just want to change the study date from 20080701 to 20080000, then we'll use the regexp
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0008, 0x0020)' 'regexp' '0701$' '0000'
+```
 
 
 ## Custom rules with dictionary file
@@ -92,6 +96,17 @@ Same as before, the `ActionName` has to be defined in the [actions list](#action
 dicom-anonymizer InputFilePath OutputFilePath --dictionary dictionary.json
 ```
 
+If you want to use the **regexp** action in a dictionary:
+```json
+{
+    "(0x0002, 0x0002)": "ActionName",
+    "(0x0008, 0x0020)": {
+        "action": "regexp",
+        "find": "0701$",
+        "replace": "0000"
+    }
+}
+```
 
 ## Custom/overrides actions
 
@@ -152,6 +167,7 @@ In your own file, you'll have to define:
 | deleteOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | deleteOrEmplyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | deleteOrEmptyOrReplaceUID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
+|regexp| These action is not a common action. It allows to use regexp to modify values|
 
 
 ** VR: Value Representation
