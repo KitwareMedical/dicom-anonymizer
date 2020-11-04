@@ -110,7 +110,7 @@ If you want to use the **regexp** action in a dictionary:
 
 ## Custom/overrides actions
 
-Here is a small example which keep all metadata but update the series description
+Here is a small example which keeps all metadata but updates the series description
 by adding a suffix passed as a parameter.
 ```python
 import argparse
@@ -123,10 +123,10 @@ def main():
     parser.add_argument('--suffix', action='store', help='Suffix that will be added at the end of series description')
     args = parser.parse_args()
 
-    InputPath = args.input
-    OutputPath = args.output
+    input_dicom_path = args.input
+    output_dicom_path = args.output
 
-    dictionary = {}
+    extraAnonymizationRules = {}
 
     def setupSeriesDescription(dataset, tag):
         element = dataset.get(tag)
@@ -136,14 +136,14 @@ def main():
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
     # It will overrides the default behaviour
-    for i in ALL_TAGS:
-        dictionary[i] = keep
+    for i in allTags:
+        extraAnonymizationRules[i] = keep
 
     if args.suffix:
-        dictionary[(0x0008, 0x103E)] = setupSeriesDescription
+        extraAnonymizationRules[(0x0008, 0x103E)] = setupSeriesDescription
 
     # Launch the anonymization
-    anonymize(InputPath, OutputPath, dictionary)
+    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules)
 
 if __name__ == "__main__":
     main()
@@ -152,6 +152,59 @@ if __name__ == "__main__":
 In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
 - A dictionary which map your functions to a tag
+
+## Anonymize dicom tags without dicom file
+
+If for some reason, you need to anonymize dicom fields without initial dicom file (extracted from a database for example). Here is how you can do it:
+```python
+from dicomanonymizer import *
+
+def main():
+
+  # Create a list of tags object that should contains id, type and value
+  fields = [
+    { # Replaced by Anonymized
+      'id': (0x0040, 0xA123),
+      'type': 'LO',
+      'value': 'Annie de la Fontaine',
+    },
+    { # Replaced with empty value
+      'id': (0x0008, 0x0050),
+      'type': 'TM',
+      'value': 'bar',
+    },
+    { # Deleted
+      'id': (0x0018, 0x4000),
+      'type': 'VR',
+      'value': 'foo',
+    }
+  ]
+
+  # Create a readable dataset for pydicom
+  data = pydicom.Dataset()
+
+  # Add each field into the dataset
+  for field in fields:
+    data.add_new(field['id'], field['type'], field['value'])
+
+  anonymizeDataset(data)
+
+if __name__ == "__main__":
+    main()
+```
+For more information about the pydicom's Dataset, please refer [here](https://github.com/pydicom/pydicom/blob/995ac6493188313f6a2e6355477baba9f543447b/pydicom/dataset.py).
+You can also add a dictionnary as previously :
+```python
+    dictionary = {}
+
+    def newMethod(dataset, tag):
+        element = dataset.get(tag)
+        if element is not None:
+            element.value = element.value + '- generated with new method'
+
+    dictionary[(0x0008, 0x103E)] = newMethod
+    anonymizeDataset(data, dictionary)
+```
 
 # Actions list
 

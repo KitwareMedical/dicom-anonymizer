@@ -227,7 +227,7 @@ def initializeActions():
     anonymizationActions.update(generateActions(X_Z_U_STAR_TAGS, deleteOrEmptyOrReplaceUID))
     return anonymizationActions
 
-def anonymizeDICOMFile(inFile, outFile, dictionary = ''):
+def anonymizeDICOMFile(inFile, outFile, dictionary = None):
     """Anonymize a DICOM file by modyfying personal tags
 
     Conforms to DICOM standard except for customer specificities.
@@ -236,18 +236,21 @@ def anonymizeDICOMFile(inFile, outFile, dictionary = ''):
     :param outFile: File path or file-like object to write to
     :param dictionary: add more tag's actions
     """
+    dataset = pydicom.dcmread(inFile)
+
+    anonymizeDataset(dataset, dictionary)
+
+    # Store modified image
+    dataset.save_as(outFile)
+
+def anonymizeDataset(dataset, dictionary = None):
     currentAnonymizationActions = initializeActions()
 
     if dictionary != '':
         currentAnonymizationActions.update(dictionary)
 
-    dataset = pydicom.dcmread(inFile)
-
     for tag, action in currentAnonymizationActions.items():
         action(dataset, tag)
 
-    # X - Private tags = (0xgggg, oxeeee) where 0xgggg is odd
+    # X - Private tags = (0xgggg, 0xeeee) where 0xgggg is odd
     dataset.remove_private_tags()
-
-    # Store modified image
-    dataset.save_as(outFile)
