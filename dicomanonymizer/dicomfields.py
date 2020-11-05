@@ -285,3 +285,15 @@ X_Z_U_STAR_TAGS = [
     (0x0008, 0x1140), # Referenced Image Sequence
     (0x0008, 0x2112), # Source Image Sequence
 ]
+
+# Contains all previous tags into one array
+ALL_TAGS = []
+ALL_TAGS.extend(D_TAGS)
+ALL_TAGS.extend(Z_TAGS)
+ALL_TAGS.extend(X_TAGS)
+ALL_TAGS.extend(U_TAGS)
+ALL_TAGS.extend(Z_D_TAGS)
+ALL_TAGS.extend(X_Z_TAGS)
+ALL_TAGS.extend(X_D_TAGS)
+ALL_TAGS.extend(X_Z_D_TAGS)
+ALL_TAGS.extend(X_Z_U_STAR_TAGS)

@@ -21,7 +21,7 @@ def anonymize(inputPath, outputPath, anonymizationActions):
             outputPath = OutputFolder + os.path.basename(inputPath)
 
     if InputFolder != '' and OutputFolder == '':
-        print('Error, please set an output folder path with an input folder path')
+        print('Error, please set a correct output folder path')
         sys.exit()
 
     # Generate list of input file if a folder has been set
@@ -71,7 +71,10 @@ def main(definedActionMap = {}):
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
-    parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tags list')
+    parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tag.'\
+    '\'regexp\' action takes two arguments: '\
+        '1. regexp to find substring '\
+        '2. the string that will replace the previous found string')
     parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
     args = parser.parse_args()
 
@@ -85,30 +88,56 @@ def main(definedActionMap = {}):
         numberOfNewTagsActions = len(args.t)
         if numberOfNewTagsActions > 0:
             for i in range(numberOfNewTagsActions):
-                actionName = args.t[i].pop()
-                if len(args.t[i]) == 0:
+                currentTagParameters = args.t[i]
+
+                nbParameters = len(currentTagParameters)
+                if nbParameters == 0:
                     continue
-                tagsList = []
-                for tag in args.t[i]:
-                    tagsList.append(ast.literal_eval(tag))
+
+                options = None
+                actionName = currentTagParameters[1]
+
+                # Means that we are in regexp mode
+                if nbParameters == 4:
+                    options = {
+                        "find": currentTagParameters[2],
+                        "replace": currentTagParameters[3]
+                    }
+
+                tagsList = [ast.literal_eval(currentTagParameters[0])]
+
+                action = eval(actionName)
+                # When generateActions is called and we have options, we don't want use regexp
+                # as an action but we want to call it to generate a new method
+                if options is not None:
+                    action = actionName
 
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(tagsList, eval(actionName))
+                    newAnonymizationActions = generateActions(tagsList, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(tagsList, eval(actionName)))
+                    newAnonymizationActions.update(generateActions(tagsList, action, options))
                 cpt += 1
 
     # Read an existing dictionary
     if args.dictionary:
         with open(args.dictionary) as json_file:
             data = json.load(json_file)
-            for k, v in data.items():
-                l = [ast.literal_eval(k)]
-                actionFunction = definedActionMap[v] if v in definedActionMap else eval(v)
+            for key, value in data.items():
+                actionName = value
+                options = None
+                if type(value) is dict:
+                    actionName = value['action']
+                    options = {
+                        "find": value['find'],
+                        "replace" : value['replace']
+                    }
+
+                l = [ast.literal_eval(key)]
+                action = definedActionMap[actionName] if actionName in definedActionMap else eval(actionName)
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(l, actionFunction)
+                    newAnonymizationActions = generateActions(l, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(l, actionFunction))
+                    newAnonymizationActions.update(generateActions(l, action, options))
                 cpt += 1
 
     # Launch the anonymization
