@@ -106,8 +106,11 @@ def deleteElement(dataset, element):
         replaceElementDate(element)
     elif element.VR == 'SQ':
         for subDataset in element.value:
-            for subElement in subDataset.elements():
-                deleteElement(subDataset, subElement)
+            try:
+                for subElement in subDataset.elements():
+                    deleteElement(subDataset, subElement)
+            except AttributeError:
+                pass
     else:
         del dataset[element.tag]
 
