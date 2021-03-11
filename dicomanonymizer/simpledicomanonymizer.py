@@ -18,7 +18,7 @@ def regexp(options):
         """
         element = dataset.get(tag)
         if element is not None:
-            element.value = re.sub(options['find'], options['replace'], element.value)
+            element.value = re.sub(options['find'], options['replace'], str(element.value))
 
     return applyRegexp
 
