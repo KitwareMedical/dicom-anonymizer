@@ -7,7 +7,7 @@ import tqdm
 
 from .simpledicomanonymizer import *
 
-def anonymize(inputPath, outputPath, anonymizationActions):
+def anonymize(inputPath, outputPath, anonymizationActions, deletePrivateTags = True):
     # Get input arguments
     InputFolder = ''
     OutputFolder = ''
@@ -38,7 +38,7 @@ def anonymize(inputPath, outputPath, anonymizationActions):
 
     progressBar = tqdm.tqdm(total=len(inputFilesList))
     for cpt in range(len(inputFilesList)):
-        anonymizeDICOMFile(inputFilesList[cpt], outputFilesList[cpt], anonymizationActions)
+        anonymizeDICOMFile(inputFilesList[cpt], outputFilesList[cpt], anonymizationActions, deletePrivateTags)
         progressBar.update(1)
 
     progressBar.close()
@@ -76,6 +76,8 @@ def main(definedActionMap = {}):
         '1. regexp to find substring '\
         '2. the string that will replace the previous found string')
     parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
+    parser.add_argument('--keepPrivateTags', action='store_true', dest='keepPrivateTags', help='If used, then private tags won\'t be deleted')
+    parser.set_defaults(keepPrivateTags=False)
     args = parser.parse_args()
 
     InputPath = args.input
@@ -141,4 +143,4 @@ def main(definedActionMap = {}):
                 cpt += 1
 
     # Launch the anonymization
-    anonymize(InputPath, OutputPath, newAnonymizationActions)
+    anonymize(InputPath, OutputPath, newAnonymizationActions, not args.keepPrivateTags)
