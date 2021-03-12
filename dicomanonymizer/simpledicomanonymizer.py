@@ -1,4 +1,6 @@
 import re
+from typing import List
+
 import pydicom
 from random import randint
 
@@ -293,7 +295,73 @@ def anonymize_dicom_file(in_file: str, out_file: str, extra_anonymization_rules:
     dataset.save_as(out_file)
 
 
-def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict = None, deletePrivateTags: bool = True) -> None:
+def get_private_tag(dataset, tag):
+    """
+    Get the creator and element from tag
+
+    :param dataset: Dicom dataset
+    :param tag: Tag from which we want to extract private information
+    :return dictionary with creator of the tag and tag element (which contains element + offset)
+    """
+    element = dataset.get(tag)
+
+    element_value = element.value
+    tag_group = element.tag.group
+    # The element is a private creator
+    if element_value in dataset.private_creators(tag_group):
+        creator = {
+            "tagGroup": tag_group,
+            "creatorName": element.value
+        }
+        private_element = None
+    # The element is a private element with an associated private creator
+    else:
+        # Shift the element tag in order to get the create_tag
+        # 0x1009 >> 8 will give 0x0010
+        create_tag_element = element.tag.element >> 8
+        create_tag = pydicom.tag.Tag(tag_group, create_tag_element)
+        create_dataset = dataset.get(create_tag)
+        creator = {
+            "tagGroup": tag_group,
+            "creatorName": create_dataset.value
+        }
+        # Define which offset should be applied to the creator to find
+        # this element
+        # 0x0010 << 8 will give 0x1000
+        offset_from_creator = element.tag.element - (create_tag_element << 8)
+        private_element = {
+            "element": element,
+            "offset": offset_from_creator
+        }
+
+    return {
+        "creator": creator,
+        "element": private_element
+    }
+
+
+def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> List[dict]:
+    """
+    Extract private tag as a list of object with creator and element
+
+    :param anonymization_actions: list of tags associated to an action
+    :param dataset: Dicom dataset which will be anonymize and contains all private tags
+    :return Array of object
+    """
+    private_tags = []
+    for tag, action in anonymization_actions.items():
+        try:
+            element = dataset.get(tag)
+        except:
+            print("Cannot get element from tag: ", tag)
+
+        if element and element.tag.is_private:
+            private_tags.append(get_private_tag(dataset, tag))
+
+    return private_tags
+
+
+def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict = None, delete_private_tags: bool = True) -> None:
     """
     Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
 
@@ -306,9 +374,26 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
     if extra_anonymization_rules is not None:
         current_anonymization_actions.update(extra_anonymization_rules)
 
+    private_tags = []
+
     for tag, action in current_anonymization_actions.items():
         action(dataset, tag)
+        try:
+            element = dataset.get(tag)
+        except:
+            print("Cannot get element from tag: ", tag)
+
+        if element and element.tag.is_private:
+            private_tags.append(get_private_tag(dataset, tag))
 
     # X - Private tags = (0xgggg, 0xeeee) where 0xgggg is odd
-    if deletePrivateTags:
+    if delete_private_tags:
         dataset.remove_private_tags()
+
+    # Adding back private tags if specified in dictionary
+    for privateTag in private_tags:
+        creator = privateTag["creator"]
+        element = privateTag["element"]
+        block = dataset.private_block(creator["tagGroup"], creator["creatorName"], create=True)
+        if element is not None:
+            block.add_new(element["offset"], element["element"].VR, element["element"].value)
