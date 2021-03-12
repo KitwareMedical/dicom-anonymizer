@@ -144,7 +144,7 @@ def delete_element(dataset, element):
     """
     if element.VR == 'DA':
         replace_element_date(element)
-    elif element.VR == 'SQ':
+    elif element.VR == 'SQ' and element.value is type(pydicom.Sequence):
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
                 delete_element(sub_dataset, sub_element)
