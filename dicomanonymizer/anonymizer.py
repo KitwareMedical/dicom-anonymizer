@@ -2,72 +2,86 @@ import argparse
 import ast
 import json
 import os
-import re
+import sys
 import tqdm
 
 from .simpledicomanonymizer import *
 
-def anonymize(inputPath, outputPath, anonymizationActions, deletePrivateTags = True):
+def anonymize(input_path: str, output_path: str, anonymization_actions: dict) -> None:
+    """
+    Read data from input path (folder or file) and launch the anonymization.
+
+    :param input_path: Path to a folder or to a file. If set to a folder,
+    then cross all over subfiles and apply anonymization
+    :param output_path: Path to a folder or to a file.
+    :param anonymization_actions: List of actions that will be applied on tags
+    """
     # Get input arguments
-    InputFolder = ''
-    OutputFolder = ''
+    input_folder = ''
+    output_folder = ''
 
-    if os.path.isdir(inputPath):
-        InputFolder = inputPath
+    if os.path.isdir(input_path):
+        input_folder = input_path
 
-    if os.path.isdir(outputPath):
-        OutputFolder = outputPath
-        if InputFolder == '':
-            outputPath = OutputFolder + os.path.basename(inputPath)
+    if os.path.isdir(output_path):
+        output_folder = output_path
+        if input_folder == '':
+            output_path = output_folder + os.path.basename(input_path)
 
-    if InputFolder != '' and OutputFolder == '':
+    if input_folder != '' and output_folder == '':
         print('Error, please set a correct output folder path')
         sys.exit()
 
     # Generate list of input file if a folder has been set
-    inputFilesList = []
-    outputFilesList = []
-    if InputFolder == '':
-        inputFilesList.append(inputPath)
-        outputFilesList.append(outputPath)
+    input_files_list = []
+    output_files_list = []
+    if input_folder == '':
+        input_files_list.append(input_path)
+        output_files_list.append(output_path)
     else:
-        files = os.listdir(InputFolder)
+        files = os.listdir(input_folder)
         for fileName in files:
-            inputFilesList.append(InputFolder + '/' + fileName)
-            outputFilesList.append(OutputFolder + '/' + fileName)
+            input_files_list.append(input_folder + '/' + fileName)
+            output_files_list.append(output_folder + '/' + fileName)
 
-    progressBar = tqdm.tqdm(total=len(inputFilesList))
-    for cpt in range(len(inputFilesList)):
-        anonymizeDICOMFile(inputFilesList[cpt], outputFilesList[cpt], anonymizationActions, deletePrivateTags)
-        progressBar.update(1)
+    progress_bar = tqdm.tqdm(total=len(input_files_list))
+    for cpt in range(len(input_files_list)):
+        anonymize_dicom_file(input_files_list[cpt], output_files_list[cpt], anonymization_actions, deletePrivateTags)
+        progress_bar.update(1)
 
-    progressBar.close()
+    progress_bar.close()
 
 
-def generateActionsDictionary(mapActionTag, definedActionMap = {}):
-    generatedMap = {}
+def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict:
+    """
+    Generate a new dictionary which maps actions function to tags
+
+    :param map_action_tag: link actions to tags
+    :param defined_action_map: link action name to action function
+    """
+    generated_map = {}
     cpt = 0
-    for tag in mapActionTag:
+    for tag in map_action_tag:
         test = [tag]
-        action = mapActionTag[tag]
+        action = map_action_tag[tag]
 
         # Define the associated function to the tag
         if callable(action):
-            actionFunction = action
+            action_function = action
         else:
-            actionFunction = definedActionMap[action] if action in definedActionMap else eval(action)
+            action_function = defined_action_map[action] if action in defined_action_map else eval(action)
 
         # Generate the map
         if cpt == 0:
-            generatedMap = generateActions(test, actionFunction)
+            generated_map = generate_actions(test, action_function)
         else:
-            generatedMap.update(generateActions(test, actionFunction))
+            generated_map.update(generate_actions(test, action_function))
         cpt += 1
 
-    return generatedMap
+    return generated_map
 
 
-def main(definedActionMap = {}):
+def main(defined_action_map = {}):
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
@@ -80,44 +94,44 @@ def main(definedActionMap = {}):
     parser.set_defaults(keepPrivateTags=False)
     args = parser.parse_args()
 
-    InputPath = args.input
-    OutputPath = args.output
+    input_path = args.input
+    output_path = args.output
 
     # Create a new actions' dictionary from parameters
-    newAnonymizationActions = {}
+    new_anonymization_actions = {}
     cpt = 0
     if args.t:
-        numberOfNewTagsActions = len(args.t)
-        if numberOfNewTagsActions > 0:
-            for i in range(numberOfNewTagsActions):
-                currentTagParameters = args.t[i]
+        number_of_new_tags_actions = len(args.t)
+        if number_of_new_tags_actions > 0:
+            for i in range(number_of_new_tags_actions):
+                current_tag_parameters = args.t[i]
 
-                nbParameters = len(currentTagParameters)
-                if nbParameters == 0:
+                nb_parameters = len(current_tag_parameters)
+                if nb_parameters == 0:
                     continue
 
                 options = None
-                actionName = currentTagParameters[1]
+                action_name = current_tag_parameters[1]
 
                 # Means that we are in regexp mode
-                if nbParameters == 4:
+                if nb_parameters == 4:
                     options = {
-                        "find": currentTagParameters[2],
-                        "replace": currentTagParameters[3]
+                        "find": current_tag_parameters[2],
+                        "replace": current_tag_parameters[3]
                     }
 
-                tagsList = [ast.literal_eval(currentTagParameters[0])]
+                tags_list = [ast.literal_eval(current_tag_parameters[0])]
 
-                action = eval(actionName)
-                # When generateActions is called and we have options, we don't want use regexp
+                action = eval(action_name)
+                # When generate_actions is called and we have options, we don't want use regexp
                 # as an action but we want to call it to generate a new method
                 if options is not None:
-                    action = actionName
+                    action = action_name
 
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(tagsList, action, options)
+                    new_anonymization_actions = generate_actions(tags_list, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(tagsList, action, options))
+                    new_anonymization_actions.update(generate_actions(tags_list, action, options))
                 cpt += 1
 
     # Read an existing dictionary
@@ -125,22 +139,22 @@ def main(definedActionMap = {}):
         with open(args.dictionary) as json_file:
             data = json.load(json_file)
             for key, value in data.items():
-                actionName = value
+                action_name = value
                 options = None
                 if type(value) is dict:
-                    actionName = value['action']
+                    action_name = value['action']
                     options = {
                         "find": value['find'],
                         "replace" : value['replace']
                     }
 
                 l = [ast.literal_eval(key)]
-                action = definedActionMap[actionName] if actionName in definedActionMap else eval(actionName)
+                action = defined_action_map[action_name] if action_name in defined_action_map else eval(action_name)
                 if cpt == 0:
-                    newAnonymizationActions = generateActions(l, action, options)
+                    new_anonymization_actions = generate_actions(l, action, options)
                 else:
-                    newAnonymizationActions.update(generateActions(l, action, options))
+                    new_anonymization_actions.update(generate_actions(l, action, options))
                 cpt += 1
 
     # Launch the anonymization
-    anonymize(InputPath, OutputPath, newAnonymizationActions, not args.keepPrivateTags)
+    anonymize(input_path, output_path, new_anonymization_actions, not args.keepPrivateTags)

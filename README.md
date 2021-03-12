@@ -12,12 +12,12 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 | D_TAGS | replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | Z_TAGS | empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_TAGS | delete | Completely remove the tag |
-| U_TAGS | replaceUID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
-| Z_D_TAGS | emptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| X_Z_TAGS | deleteOrEmpty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
-| X_D_TAGS | deleteOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| X_Z_D_TAGS | deleteOrEmptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| X_Z_U_STAR_TAGS | deleteOrEmptyOrReplaceUID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR**|
+| U_TAGS | replace_UID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
+| Z_D_TAGS | empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| X_Z_TAGS | delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
+| X_D_TAGS | delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| X_Z_D_TAGS | delete_or_empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| X_Z_U_STAR_TAGS | delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR**|
 | ALL_TAGS | | Contains all previous defined tags
 
 
@@ -195,7 +195,7 @@ def main():
   for field in fields:
     data.add_new(field['id'], field['type'], field['value'])
 
-  anonymizeDataset(data)
+  anonymize_dataset(data)
 
 if __name__ == "__main__":
     main()
@@ -211,7 +211,7 @@ You can also add a dictionnary as previously :
             element.value = element.value + '- generated with new method'
 
     dictionary[(0x0008, 0x103E)] = newMethod
-    anonymizeDataset(data, dictionary)
+    anonymize_dataset(data, dictionary)
 ```
 
 # Actions list
@@ -222,12 +222,12 @@ You can also add a dictionnary as previously :
 | delete | Completely remove the tag |
 | keep | Do nothing on the tag |
 | clean | Don't use it for now. This is not implemented |
-| replaceUID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
-| emptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| deleteOrEmpty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
-| deleteOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| replace_UID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
+| empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
+| delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | deleteOrEmplyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| deleteOrEmptyOrReplaceUID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
+| delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 |regexp| These action is not a common action. It allows to use regexp to modify values|
 
 
