@@ -54,6 +54,14 @@ dicom-anonymizer Input Output
 ```
 
 
+## Private tags
+
+Default behavior of the dicom anonymizer is to delete private tags.
+But you can bypass it:
+- Solution 1: Use regexp to define which private tag you want to keep/update (cf [custom rules](#custom-rules))
+- Solution 2: Use dicom-anonymizer.exe option to keep all private tags : `--keepPrivateTags`
+
+
 
 ## Custom rules
 You can manually add new rules in order to have different behaviors with certain tags.
