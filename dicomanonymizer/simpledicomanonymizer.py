@@ -5,6 +5,7 @@ import pydicom
 from random import randint
 
 from .dicomfields import *
+from .format_tag import tag_to_hex_strings
 
 dictionary = {}
 
@@ -353,7 +354,7 @@ def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> L
         try:
             element = dataset.get(tag)
         except:
-            print("Cannot get element from tag: ", tag)
+            print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
         if element and element.tag.is_private:
             private_tags.append(get_private_tag(dataset, tag))
@@ -381,7 +382,7 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
         try:
             element = dataset.get(tag)
         except:
-            print("Cannot get element from tag: ", tag)
+            print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
         if element and element.tag.is_private:
             private_tags.append(get_private_tag(dataset, tag))
