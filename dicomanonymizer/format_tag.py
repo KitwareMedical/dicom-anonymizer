@@ -15,7 +15,7 @@ def hex_to_string(x):
     num_zeroes = 4 - len(right)
     return left + ('0'*num_zeroes) + right
 
-def tag_to_hex_string(tag):
+def tag_to_hex_strings(tag):
     """
     Convert a tag tuple to a tuple of full hex number strings.
 
