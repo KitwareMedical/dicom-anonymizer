@@ -9,6 +9,7 @@ from .format_tag import tag_to_hex_strings
 
 dictionary = {}
 
+
 # Regexp function
 
 def regexp(options: dict):
@@ -19,6 +20,7 @@ def regexp(options: dict):
         - find: which string should be find
         - replace: string that will replace the find string
     """
+
     def apply_regexp(dataset, tag):
         """
         Apply a regexp to the dataset
@@ -28,6 +30,7 @@ def regexp(options: dict):
             element.value = re.sub(options['find'], options['replace'], str(element.value))
 
     return apply_regexp
+
 
 # Default anonymization functions
 
@@ -155,6 +158,7 @@ def delete_element(dataset, element):
 
 def delete(dataset, tag):
     """X - remove"""
+
     def range_callback(dataset, data_element):
         if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
             delete_element(dataset, data_element)
@@ -226,6 +230,7 @@ def delete_or_empty_or_replace_UID(dataset, tag):
         else:
             empty_element(element)
 
+
 # Generation functions
 
 actions_map_name_functions = {
@@ -242,7 +247,8 @@ actions_map_name_functions = {
     "regexp": regexp
 }
 
-def generate_actions(tag_list:list, action, options: dict =None) -> dict:
+
+def generate_actions(tag_list: list, action, options: dict = None) -> dict:
     """
     Generate a dictionary using list values as tag and assign the same value to all
 
@@ -277,7 +283,8 @@ def initialize_actions() -> dict:
     return anonymization_actions
 
 
-def anonymize_dicom_file(in_file: str, out_file: str, extra_anonymization_rules: dict = None, delete_private_tags: bool = True) -> None:
+def anonymize_dicom_file(in_file: str, out_file: str, extra_anonymization_rules: dict = None,
+                         delete_private_tags: bool = True) -> None:
     """
     Anonymize a DICOM file by modifying personal tags
 
@@ -362,7 +369,8 @@ def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> L
     return private_tags
 
 
-def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict = None, delete_private_tags: bool = True) -> None:
+def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict = None,
+                      delete_private_tags: bool = True) -> None:
     """
     Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
 
