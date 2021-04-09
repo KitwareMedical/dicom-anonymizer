@@ -378,9 +378,18 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
     private_tags = []
 
     for tag, action in current_anonymization_actions.items():
-        action(dataset, tag)
+        # The meta header information is located in the `file_meta` dataset
+        # For tags with tag group `0x0002` we thus apply the action to the `file_meta` dataset
+        if tag[0] == 0x0002:
+            # Apply rule to meta information header
+            action(dataset.file_meta, tag)
+        else:
+            action(dataset, tag)
         try:
-            element = dataset.get(tag)
+            # `get()` does not accept the 4-indices tags in `dicomfields.py`
+            # so only make this check with <=2-indices tags
+            if len(tag) <= 2:
+                element = dataset.get(tag)
         except:
             print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
