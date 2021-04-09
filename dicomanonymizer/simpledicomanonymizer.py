@@ -387,7 +387,9 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
             action(dataset, tag)
         try:
             # `get()` does not accept the 4-indices tags in `dicomfields.py`
-            # so only make this check with <=2-indices tags
+            # so only attempt to get the tag with <=2-indices tags
+            # otherwise set to None
+            element = None
             if len(tag) <= 2:
                 element = dataset.get(tag)
         except:
