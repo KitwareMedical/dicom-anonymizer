@@ -158,17 +158,9 @@ def delete_element(dataset, element):
 
 def delete(dataset, tag):
     """X - remove"""
-
-    def range_callback(dataset, data_element):
-        if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
-            delete_element(dataset, data_element)
-
-    if len(tag) > 2:  # Tag ranges
-        dataset.walk(range_callback)
-    else:  # Individual Tags
-        element = dataset.get(tag)
-        if element is not None:
-            delete_element(dataset, element)  # element.tag is not the same type as tag.
+    element = dataset.get(tag)
+    if element is not None:
+        delete_element(dataset, element)  # element.tag is not the same type as tag.
 
 
 def keep(dataset, tag):
@@ -386,14 +378,27 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
     private_tags = []
 
     for tag, action in current_anonymization_actions.items():
-        action(dataset, tag)
-        try:
-            element = dataset.get(tag)
-        except:
-            print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
-        if element and element.tag.is_private:
-            private_tags.append(get_private_tag(dataset, tag))
+        def range_callback(dataset, data_element):
+            if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
+                action(dataset, tag)
+
+        element = None
+
+        # We are in a repeating group
+        if len(tag) > 2:
+            dataset.walk(range_callback)
+        # Individual Tags
+        else:
+            action(dataset, tag)
+            try:
+                element = dataset.get(tag)
+            except:
+                print("Cannot get element from tag: ", tag_to_hex_strings(tag))
+
+            # Get private tag to restore it later
+            if element and element.tag.is_private:
+                private_tags.append(get_private_tag(dataset, tag))
 
     # X - Private tags = (0xgggg, 0xeeee) where 0xgggg is odd
     if delete_private_tags:
