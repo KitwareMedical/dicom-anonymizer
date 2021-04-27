@@ -399,10 +399,10 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
     if delete_private_tags:
         dataset.remove_private_tags()
 
-    # Adding back private tags if specified in dictionary
-    for privateTag in private_tags:
-        creator = privateTag["creator"]
-        element = privateTag["element"]
-        block = dataset.private_block(creator["tagGroup"], creator["creatorName"], create=True)
-        if element is not None:
-            block.add_new(element["offset"], element["element"].VR, element["element"].value)
+        # Adding back private tags if specified in dictionary
+        for privateTag in private_tags:
+            creator = privateTag["creator"]
+            element = privateTag["element"]
+            block = dataset.private_block(creator["tagGroup"], creator["creatorName"], create=True)
+            if element is not None:
+                block.add_new(element["offset"], element["element"].VR, element["element"].value)
