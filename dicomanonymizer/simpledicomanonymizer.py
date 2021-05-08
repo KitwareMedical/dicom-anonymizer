@@ -68,7 +68,8 @@ def replace_element(element):
     - LO, SH, PN, CS: replace with 'Anonymized'
     - UI: cf replace_element_UID
     - IS: replace with '0'
-    - SS: replace with 0
+    - FD, FL, SS, US: replace with 0
+    - ST: replace with ''
     - SQ: call replace_element for all sub elements
     - DT: cf replace_element_date_time
     """
@@ -84,8 +85,10 @@ def replace_element(element):
         pass
     elif element.VR == 'IS':
         element.value = '0'
-    elif element.VR == 'SS':
+    elif element.VR in ('FD', 'FL', 'SS', 'US'):
         element.value = 0
+    elif element.VR == 'ST':
+        element.value = ''
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
