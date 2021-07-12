@@ -64,7 +64,8 @@ setup(
     # Define an executable calls dicom-anonymizer from a specific file
     entry_points={
         'console_scripts': [
-            'dicom-anonymizer = dicomanonymizer.anonymizer:main'
+            'dicom-anonymizer = dicomanonymizer.anonymizer:main',
+            'dicom-batch-anon = dicomanonymizer.batch_anonymizer:main'
         ]
     },
 
