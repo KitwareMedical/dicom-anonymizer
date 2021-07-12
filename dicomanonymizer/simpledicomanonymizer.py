@@ -2,6 +2,7 @@ import re
 from typing import List
 
 import pydicom
+from pydicom.errors import InvalidDicomError
 from random import randint
 
 from .dicomfields import *
@@ -290,7 +291,11 @@ def anonymize_dicom_file(in_file: str, out_file: str, extra_anonymization_rules:
     :param extra_anonymization_rules: add more tag's actions
     :param delete_private_tags: Define if private tags should be delete or not
     """
-    dataset = pydicom.dcmread(in_file)
+    try:
+        dataset = pydicom.dcmread(in_file)
+    except InvalidDicomError:
+        print(f"Invalid dicom file: {in_file}, skipping")
+        return
 
     anonymize_dataset(dataset, extra_anonymization_rules, delete_private_tags)
 
