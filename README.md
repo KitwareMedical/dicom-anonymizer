@@ -1,5 +1,19 @@
 # DicomAnonymizer
 
+**Current fork notes**
+
+Hi, this fork is provided original project functionality, as well as new one. I have added batch-anonymization.
+In short, you can give a source and destination root directories, source should contain (possibly nested) directories
+with dicom files. The tool will find all folders inside the root, anonymize dicom-files and save anonymized data under
+the destination root, preserving the original directories structure.
+
+Here is the use example:
+- `git clone git@github.com:ademyanchuk/dicom-anonymizer.git`
+- `pip install .` after cd into the project directory, building as in original notes will also work
+- you can now  do `dicom-batch-anon -- type batch --src path/to/source --dst path/to/destination`
+
+**Original ReadMe continues here:**
+
 Python package to anonymize DICOM files.
 The anonymization answer to the standard . More information about dicom fields for anonymization can be found [here](http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1).
 
