@@ -23,14 +23,14 @@ def to_Path(p: Path_Str):
         raise TypeError(f"Invalid type of {p}")
 
 
-def create_if_not_exist(path: Path):
+def create_if_not_exist(path: Path, **kwargs):
     """Helper to make sure path exists
 
     Args:
         path (Path): path to create if not exists
     """
     if not path.exists():
-        path.mkdir()
+        path.mkdir(**kwargs)
 
 
 def try_valid_path(path: Path):
