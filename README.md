@@ -10,7 +10,8 @@ the destination root, preserving the original directories structure.
 Here is the use example:
 - `git clone git@github.com:ademyanchuk/dicom-anonymizer.git`
 - `pip install .` after cd into the project directory, building as in original notes will also work
-- you can now  do `dicom-batch-anon -- type batch --src path/to/source --dst path/to/destination`
+- you can now  do `dicom-batch-anon path/to/source path/to/destination`
+- run `dicom-batch-anon --help` for more options
 
 **Original ReadMe continues here:**
 
