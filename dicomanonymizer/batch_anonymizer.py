@@ -7,18 +7,27 @@
 
 import argparse
 import json
+import logging
+import logging.config
 import random
 from pathlib import Path
 
 from dicomanonymizer.dicom_utils import fix_exposure
 from dicomanonymizer.simpledicomanonymizer import anonymize_dicom_file
 from dicomanonymizer.utils import (
+    LOGS_PATH,
+    PROJ_ROOT,
     Path_Str,
     create_if_not_exist,
     get_dirs,
     to_Path,
     try_valid_dir,
 )
+
+# setup logging
+create_if_not_exist(LOGS_PATH)
+logging.config.fileConfig(PROJ_ROOT / "logging.ini", disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 
 _STATE_PATH = Path.home() / ".dicomanonymizer/cache"
 create_if_not_exist(_STATE_PATH, parents=True)
@@ -43,12 +52,12 @@ def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = 
     out_path = to_Path(out_path)
     create_if_not_exist(out_path)
 
-    print(f"Processing: {in_path}")
+    logger.info(f"Processing: {in_path}")
     # work itself
     in_files = [p for p in in_path.iterdir() if p.is_file()]
 
     if not in_files:
-        print(f"Folder {in_path} doesn't have dicom files, skip.")
+        logger.info(f"Folder {in_path} doesn't have dicom files, skip.")
         return
 
     if debug:
@@ -58,7 +67,8 @@ def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = 
         try:
             anonymize_dicom_file(f_in, f_out)
         except Exception as e:
-            print(f_in)
+            logger.info(f_in)
+            logger.exception(e)
             raise e
     else:
         for f_in in in_files:
@@ -66,7 +76,8 @@ def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = 
             try:
                 anonymize_dicom_file(f_in, f_out)
             except Exception as e:
-                print(f_in)
+                logger.info(f_in)
+                logger.exception(e)
                 raise e
 
 
@@ -94,11 +105,16 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
         processed_state = None
     if processed_state is None:
         processed_state = {}
+    logger.info(
+        "Processed paths will be added to the cache, if cache exist and has some paths included, they will be skipped"
+    )
+    logger.info(f"if, you need to process data again delete file {STATE_FILE}, please")
 
     # will try to process all folders, if exception will dump state before raising
     try:
         for in_d in in_dirs:
             if str(in_d) in processed_state:
+                logger.info(f"{in_d} path is in cache, skipping")
                 continue
             else:
                 rel_path = in_d.relative_to(in_root)
@@ -138,12 +154,19 @@ parser.add_argument(
 
 
 def main():
+    # parse args
     args = parser.parse_args()
     in_path = Path(args.src)
     out_path = Path(args.dst)
     debug = args.debug
     # fix known issue with dicom
     fix_exposure()
+    msg = f"""
+    Start a job: {args.type}, debug set to {args.debug}
+    Will anonymize data at: {in_path} and save to {out_path}
+    """
+    logger.info(msg)
+    # anonymize
     if args.type == "batch":
         anonymize_root_folder(in_path, out_path, debug=debug)
     elif args.type == "folder":

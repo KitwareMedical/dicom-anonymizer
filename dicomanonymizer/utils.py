@@ -4,6 +4,10 @@ from pathlib import Path
 # Type defs
 Path_Str = Union[str, Path]
 
+# Projects paths go here
+PROJ_ROOT = Path(__file__).parent.absolute().parent
+LOGS_PATH = PROJ_ROOT / "logs"
+
 
 def to_Path(p: Path_Str):
     """Convert str to Path
