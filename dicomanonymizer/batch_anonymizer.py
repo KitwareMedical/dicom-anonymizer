@@ -55,11 +55,19 @@ def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = 
         # anonymize just one file
         f_in = random.choice(in_files)
         f_out = out_path / f_in.name
-        anonymize_dicom_file(f_in, f_out)
+        try:
+            anonymize_dicom_file(f_in, f_out)
+        except Exception as e:
+            print(f_in)
+            raise e
     else:
         for f_in in in_files:
             f_out = out_path / f_in.name
-            anonymize_dicom_file(f_in, f_out)
+            try:
+                anonymize_dicom_file(f_in, f_out)
+            except Exception as e:
+                print(f_in)
+                raise e
 
 
 def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
