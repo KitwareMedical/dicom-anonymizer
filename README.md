@@ -13,7 +13,7 @@ Here is the use example:
 - you can now  do `dicom-batch-anon path/to/source path/to/destination`
 - run `dicom-batch-anon --help` for more options
 
-Also, I have additional tags in [dicomfields.py](.\dicomanonymizer\dicomfields.py) not mentioned in dicom profile for de-id. You can see what was
+Also, I have additional tags in [dicomfields.py](dicomanonymizer/dicomfields.py) not mentioned in dicom profile for de-id. You can see what was
 added in the above mentioned file in the lists, under the comment `# Customization`
 
 **Original ReadMe continues here:**
