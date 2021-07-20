@@ -26,7 +26,11 @@ from dicomanonymizer.utils import (
 
 # setup logging
 create_if_not_exist(LOGS_PATH)
-logging.config.fileConfig(PROJ_ROOT / "logging.ini", disable_existing_loggers=False)
+logging.config.fileConfig(
+    PROJ_ROOT / "logging.ini",
+    defaults={"logfilename": (LOGS_PATH / "file.log").as_posix()},
+    disable_existing_loggers=False,
+)
 logger = logging.getLogger(__name__)
 
 _STATE_PATH = Path.home() / ".dicomanonymizer/cache"

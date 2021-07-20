@@ -9,7 +9,6 @@ from pydicom.errors import InvalidDicomError
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
-from .utils import LOGS_PATH, PROJ_ROOT, create_if_not_exist
 
 dictionary = {}
 
