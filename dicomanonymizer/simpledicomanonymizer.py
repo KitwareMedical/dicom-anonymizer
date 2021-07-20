@@ -1,15 +1,20 @@
+import logging
+import logging.config
 import re
+from random import randint
 from typing import List
 
 import pydicom
 from pydicom.errors import InvalidDicomError
-from random import randint
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
+from .utils import LOGS_PATH, PROJ_ROOT, create_if_not_exist
 
 dictionary = {}
 
+# setup logging
+logger = logging.getLogger(__name__)
 
 # Regexp function
 
@@ -316,11 +321,19 @@ def anonymize_dicom_file(
     try:
         dataset = pydicom.dcmread(in_file)
     except InvalidDicomError:
-        print(f"Invalid dicom file: {in_file}, skipping")
+        logger.error(f"Invalid dicom file: {in_file}, skipping")
         return
 
-    anonymize_dataset(dataset, extra_anonymization_rules, delete_private_tags)
-
+    # It is possible to have a broken dicom file, which will be opened without error
+    # by dcmread, but then you try to access an opened Dataset it will throw the error
+    # like this: NotImplementedError: Unknown Value Representation '0x01 0xbc'
+    # This dataset (explored manually) have empty `dir`
+    try:
+        anonymize_dataset(dataset, extra_anonymization_rules, delete_private_tags)
+    except NotImplementedError as e:
+        logger.error(f"error in file: {in_file}, see below")
+        logger.exception(e)
+        return
     # Store modified image
     dataset.save_as(out_file)
 
