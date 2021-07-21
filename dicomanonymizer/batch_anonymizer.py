@@ -6,6 +6,8 @@
 """
 
 import argparse
+from os import stat
+from dicomanonymizer.anonym_state import AnonState
 import json
 import logging
 import logging.config
@@ -35,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 _STATE_PATH = Path.home() / ".dicomanonymizer/cache"
 create_if_not_exist(_STATE_PATH, parents=True)
-STATE_FILE = _STATE_PATH / "state_cache.json"
 
 
 def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = False):
@@ -102,22 +103,19 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
     create_if_not_exist(out_root)
     in_dirs = get_dirs(in_root)
 
-    try:
-        with open(STATE_FILE, "r") as f:
-            processed_state = json.load(f)
-    except FileNotFoundError:
-        processed_state = None
-    if processed_state is None:
-        processed_state = {}
+    state = AnonState(_STATE_PATH)
+    state.init_state()
+    state.load_state()
+    
     logger.info(
         "Processed paths will be added to the cache, if cache exist and has some paths included, they will be skipped"
     )
-    logger.info(f"if, you need to process data again delete file {STATE_FILE}, please")
+    logger.info(f"if, you need to process data again delete files {_STATE_PATH}, please")
 
     # will try to process all folders, if exception will dump state before raising
     try:
         for in_d in in_dirs:
-            if str(in_d) in processed_state:
+            if str(in_d) in state.visited_folders:
                 logger.info(f"{in_d} path is in cache, skipping")
                 continue
             else:
@@ -125,12 +123,11 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
                 out_d = out_root / rel_path
                 anonymize_dicom_folder(in_d, out_d, **kwargs)
                 # update state
-                processed_state[str(in_d)] = str(out_d)
+                state.visited_folders[str(in_d)] = str(out_d)
     except Exception as e:
         raise e
     finally:
-        with open(STATE_FILE, "w") as f:
-            json.dump(processed_state, f)
+        state.save_state()
 
 
 # Add CLI args
@@ -175,6 +172,7 @@ def main():
         anonymize_root_folder(in_path, out_path, debug=debug)
     elif args.type == "folder":
         anonymize_dicom_folder(in_path, out_path, debug=debug)
+    logger.info("Well done!")
 
 
 if __name__ == "__main__":
