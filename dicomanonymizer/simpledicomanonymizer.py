@@ -9,6 +9,7 @@ from pydicom.errors import InvalidDicomError
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
+from .utils import Path_Str
 
 dictionary = {}
 
@@ -302,8 +303,8 @@ def initialize_actions() -> dict:
 
 
 def anonymize_dicom_file(
-    in_file: str,
-    out_file: str,
+    in_file: Path_Str,
+    out_file: Path_Str,
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
 ) -> None:
