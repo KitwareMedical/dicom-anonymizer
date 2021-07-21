@@ -2,7 +2,7 @@ import logging
 import logging.config
 import re
 from random import randint
-from typing import List
+from typing import Callable, List, Optional
 
 import pydicom
 from pydicom.errors import InvalidDicomError
@@ -307,6 +307,7 @@ def anonymize_dicom_file(
     out_file: Path_Str,
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
+    ds_callback: Optional[Callable[[pydicom.Dataset], None]] = None,
 ) -> None:
     """
     Anonymize a DICOM file by modifying personal tags
@@ -324,6 +325,9 @@ def anonymize_dicom_file(
         logger.error(f"Invalid dicom file: {in_file}, skipping")
         return
 
+    # dataset callback goes here:
+    if ds_callback is not None:
+        ds_callback(dataset)
     # It is possible to have a broken dicom file, which will be opened without error
     # by dcmread, but then you try to access an opened Dataset it will throw the error
     # like this: NotImplementedError: Unknown Value Representation '0x01 0xbc'
