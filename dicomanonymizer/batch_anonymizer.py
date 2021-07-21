@@ -6,14 +6,14 @@
 """
 
 import argparse
-from os import stat
-from dicomanonymizer.anonym_state import AnonState
-import json
 import logging
 import logging.config
 import random
 from pathlib import Path
 
+import pydicom
+
+from dicomanonymizer.anonym_state import AnonState
 from dicomanonymizer.dicom_utils import fix_exposure
 from dicomanonymizer.simpledicomanonymizer import anonymize_dicom_file
 from dicomanonymizer.utils import (
@@ -39,7 +39,9 @@ _STATE_PATH = Path.home() / ".dicomanonymizer/cache"
 create_if_not_exist(_STATE_PATH, parents=True)
 
 
-def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = False):
+def anonymize_dicom_folder(
+    in_path: Path_Str, out_path: Path_Str, debug: bool = False, **kwargs
+):
     """Anonymize dicom files in `in_path`, if `in_path` doesn't
     contain dicom files, will do nothing. Debug == True will do
     sort of dry run to check if all good for the large data storages
@@ -79,7 +81,7 @@ def anonymize_dicom_folder(in_path: Path_Str, out_path: Path_Str, debug: bool = 
         for f_in in in_files:
             f_out = out_path / f_in.name
             try:
-                anonymize_dicom_file(f_in, f_out)
+                anonymize_dicom_file(f_in, f_out, **kwargs)
             except Exception as e:
                 logger.info(f_in)
                 logger.exception(e)
@@ -106,11 +108,16 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
     state = AnonState(_STATE_PATH)
     state.init_state()
     state.load_state()
-    
+
+    def get_tags_callback(dataset: pydicom.Dataset):
+        state.tag_counter.update(dataset.dir())
+
     logger.info(
         "Processed paths will be added to the cache, if cache exist and has some paths included, they will be skipped"
     )
-    logger.info(f"if, you need to process data again delete files {_STATE_PATH}, please")
+    logger.info(
+        f"if, you need to process data again delete files {_STATE_PATH}, please"
+    )
 
     # will try to process all folders, if exception will dump state before raising
     try:
@@ -121,7 +128,9 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
             else:
                 rel_path = in_d.relative_to(in_root)
                 out_d = out_root / rel_path
-                anonymize_dicom_folder(in_d, out_d, **kwargs)
+                anonymize_dicom_folder(
+                    in_d, out_d, ds_callback=get_tags_callback, **kwargs
+                )
                 # update state
                 state.visited_folders[str(in_d)] = str(out_d)
     except Exception as e:
