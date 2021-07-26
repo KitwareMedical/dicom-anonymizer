@@ -122,17 +122,17 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
     # will try to process all folders, if exception will dump state before raising
     try:
         for in_d in in_dirs:
-            if str(in_d) in state.visited_folders:
+            rel_path = in_d.relative_to(in_root)
+            if str(rel_path) in state.visited_folders:
                 logger.info(f"{in_d} path is in cache, skipping")
                 continue
             else:
-                rel_path = in_d.relative_to(in_root)
                 out_d = out_root / rel_path
                 anonymize_dicom_folder(
                     in_d, out_d, ds_callback=get_tags_callback, **kwargs
                 )
                 # update state
-                state.visited_folders[str(in_d)] = str(out_d)
+                state.visited_folders[str(rel_path)] = True
     except Exception as e:
         raise e
     finally:
