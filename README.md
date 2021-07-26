@@ -2,9 +2,11 @@
 
 **Current fork notes**
 
-Hi, this fork is provided original project functionality, as well as new one. I have added batch-anonymization.
+Hi, this fork is provided original project functionality, as well as new one. It is important to note, that original project functionality could be depricated in the future and substituted. So, entry point `dicom-anonymizer Input Output` could be fully removed in favour of `dicom-batch-anon` entry point.  
+
+I have added batch-anonymization.
 In short, you can give a source and destination root directories, source should contain (possibly nested) directories
-with dicom files. The tool will find all folders inside the root, anonymize dicom-files and save anonymized data under
+with dicom files (but no dicom files in the root folder itself). The tool will find all folders inside the root, anonymize dicom-files and save anonymized data under
 the destination root, preserving the original directories structure.
 
 Here is the use example:
