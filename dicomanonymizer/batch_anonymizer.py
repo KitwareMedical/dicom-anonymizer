@@ -136,6 +136,20 @@ def anonymize_root_folder(in_root: Path_Str, out_root: Path_Str, **kwargs):
     except Exception as e:
         raise e
     finally:
+        # before saving updated state let's flag tags not seen previously
+        prev_state = AnonState(_STATE_PATH)
+        prev_state.init_state()
+        prev_state.load_state()
+        new_tags = set(state.tag_counter.keys()).difference(
+            prev_state.tag_counter.keys()
+        )
+        if new_tags:
+            logger.warning(
+                f"During the anonymization new tags: {new_tags} were present"
+            )
+        else:
+            logger.info("No new tags werer present")
+        # now we can save the current state
         state.save_state()
 
 
