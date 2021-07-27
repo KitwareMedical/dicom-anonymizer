@@ -5,8 +5,9 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages, setuptools
-from os import path
+import setuptools
+from setuptools import setup
+from pathlib import Path
 
 # io.open is needed for projects that support Python 2.7
 # It ensures open() defaults to text mode with universal newlines,
@@ -14,14 +15,11 @@ from os import path
 # Python 3 only projects can skip this import
 # from io import open
 
-# here = path.abspath(path.dirname(__file__))
+here = Path(__file__).parent.absolute()
 
-# # Get the long description from the README file
-# with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-#     long_description = f.read()
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+# Get the long description from the README file
+with open(here / "README.md", encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="dicom_anonymizer",  # Required
