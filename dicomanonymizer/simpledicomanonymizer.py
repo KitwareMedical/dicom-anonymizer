@@ -281,10 +281,10 @@ def generate_actions(tag_list: list, action, options: dict = None) -> dict:
 
 
 def initialize_actions() -> dict:
-    """
-    Initialize anonymization actions with DICOM standard values
+    """Initialize anonymization actions with DICOM standard values
 
-    :return Dict object which map actions to tags
+    Returns:
+        dict: mapping of tag -> action
     """
     anonymization_actions = generate_actions(D_TAGS, replace)
     anonymization_actions.update(generate_actions(Z_TAGS, empty))
@@ -309,15 +309,17 @@ def anonymize_dicom_file(
     delete_private_tags: bool = True,
     ds_callback: Optional[Callable[[pydicom.Dataset], None]] = None,
 ) -> None:
-    """
-    Anonymize a DICOM file by modifying personal tags
+    """Anonymize a DICOM file by modifying personal tags
 
     Conforms to DICOM standard except for customer specificities.
 
-    :param in_file: File path or file-like object to read from
-    :param out_file: File path or file-like object to write to
-    :param extra_anonymization_rules: add more tag's actions
-    :param delete_private_tags: Define if private tags should be delete or not
+    Args:
+        in_file (Path_Str): path to the original file
+        out_file (Path_Str): path to anonymized version of `in_file` to be saved
+        extra_anonymization_rules (dict, optional): User-provided custom anonymization rules. Defaults to None.
+        delete_private_tags (bool, optional): if private tags to be deleted. Defaults to True.
+        ds_callback (Optional[Callable[[pydicom.Dataset], None]], optional): optional way to access a dataset
+        before anonymization. Defaults to None.
     """
     try:
         dataset = pydicom.dcmread(in_file)
@@ -403,12 +405,15 @@ def anonymize_dataset(
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
 ) -> None:
-    """
-    Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
+    """Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
 
-    :param dataset: Dataset to be anonymize
-    :param extra_anonymization_rules: Rules to be applied on the dataset
-    :param delete_private_tags: Define if private tags should be delete or not
+    Args:
+        dataset (pydicom.Dataset): dicom dataset
+        extra_anonymization_rules (dict, optional): user-defined rules. Defaults to None.
+        delete_private_tags (bool, optional): if delete private tags. Defaults to True.
+
+    Raises:
+        Exception: will raise Exception if `dataset.get(tag)` failss
     """
     current_anonymization_actions = initialize_actions()
 
