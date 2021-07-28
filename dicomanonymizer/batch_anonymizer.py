@@ -29,7 +29,7 @@ from dicomanonymizer.utils import (
 # setup logging (create dirs, if it is first time)
 create_if_not_exist(LOGS_PATH, parents=True, exist_ok=True)
 logging.config.fileConfig(
-    PROJ_ROOT / "logging.ini",
+    PROJ_ROOT / "dicomanonymizer/config/logging.ini",
     defaults={"logfilename": (LOGS_PATH / "file.log").as_posix()},
     disable_existing_loggers=False,
 )
