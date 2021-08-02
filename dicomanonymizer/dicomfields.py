@@ -248,6 +248,8 @@ U_TAGS = [
     (0x0040, 0xDB0C),  # Template Extension Organization UID
     (0x0008, 0x1195),  # Transaction UID
     (0x0040, 0xA124),  # UID
+    # Customization
+    (0x0002, 0x0003),  # Media Storage SOP Instance UID
 ]
 
 # Replace element according to the VR
