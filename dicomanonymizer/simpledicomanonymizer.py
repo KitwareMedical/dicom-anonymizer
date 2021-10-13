@@ -384,7 +384,7 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
 
         def range_callback(dataset, data_element):
             if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
-                action(dataset, tag)
+                action(dataset, (data_element.tag.group, data_element.tag.element))
 
         element = None
 
