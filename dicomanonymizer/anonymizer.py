@@ -27,7 +27,7 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
     if os.path.isdir(output_path):
         output_folder = output_path
         if input_folder == '':
-            output_path = output_folder + os.path.basename(input_path)
+            output_path = os.path.join(output_folder, os.path.basename(input_path))
 
     if input_folder != '' and output_folder == '':
         print('Error, please set a correct output folder path')
