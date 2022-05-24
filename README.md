@@ -22,12 +22,20 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 
 
 # How to build it ?
+These instructions rely on wheel build-package format. Install it if you have not done it already using:
+`pip install wheel`
 
 The sources files can be packaged by using:
 `python ./setup.py bdist_wheel`
 
 This command will generate a wheel package in `dist` folder which can be then installed as a python package using
 `pip install ./dist/dicom_anonymizer-1.0.7-py2.py3-none-any.whl`
+
+On Windows, if you see a warning message
+`'./dist/dicom_anonymizer-1.0.7-py2.py3-none-any.whl' looks like a filename, but the file does not exist`,
+this could be due to pip not being able to handle relative path (See issue https://github.com/pypa/pip/issues/10808). As a work-around, change directory to `dist` and then install it using
+`pip install dicom_anonymizer-1.0.7-py2.py3-none-any.whl`
+
 
 Installing this package will also install an executable named `dicom-anonymizer`. In order to use it, please refer to the next section.
 
