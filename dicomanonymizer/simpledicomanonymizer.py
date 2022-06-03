@@ -2,7 +2,7 @@ import re
 from typing import List
 
 import pydicom
-from random import randint
+from pydicom.uid import generate_uid
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
@@ -36,13 +36,12 @@ def regexp(options: dict):
 
 def replace_element_UID(element):
     """
-    Keep char value but replace char number with random number
+    Replace UID with random UID
     The replaced value is kept in a dictionary link to the initial element.value in order to automatically
     apply the same replaced value if we have an other UID with the same value
     """
     if element.value not in dictionary:
-        new_chars = [str(randint(0, 9)) if char.isalnum() else char for char in element.value]
-        dictionary[element.value] = ''.join(new_chars)
+        dictionary[element.value] = generate_uid(None)
     element.value = dictionary.get(element.value)
 
 
