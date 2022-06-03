@@ -2,7 +2,6 @@ import re
 from typing import List
 
 import pydicom
-from pydicom.uid import generate_uid
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
@@ -34,16 +33,28 @@ def regexp(options: dict):
 
 # Default anonymization functions
 
+def get_new_UID(old_uid: str) -> str:
+    """
+    Lookup new UID in cached dictionary or create new one if none found
+    """
+    from pydicom.uid import generate_uid
+    if old_uid not in dictionary:
+        dictionary[old_uid] = generate_uid(None)
+    return dictionary.get(old_uid)
+
 def replace_element_UID(element):
     """
-    Replace UID with random UID
+    Replace UID(s) with random UID(s)
     The replaced value is kept in a dictionary link to the initial element.value in order to automatically
     apply the same replaced value if we have an other UID with the same value
     """
-    if element.value not in dictionary:
-        dictionary[element.value] = generate_uid(None)
-    element.value = dictionary.get(element.value)
-
+    from pydicom.multival import MultiValue
+    if type(element.value) == MultiValue:
+        # Example of multi-value UID situation: IrradiationEventUID, (0008,3010) 
+        for k, v in enumerate(element.value):
+            element.value[k] = get_new_UID(v)
+    else:
+        element.value = get_new_UID(element.value)
 
 def replace_element_date(element):
     """
