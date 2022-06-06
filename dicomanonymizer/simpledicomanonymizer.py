@@ -33,7 +33,7 @@ def regexp(options: dict):
 
 # Default anonymization functions
 
-def get_new_UID(old_uid: str) -> str:
+def get_UID(old_uid: str) -> str:
     """
     Lookup new UID in cached dictionary or create new one if none found
     """
@@ -52,9 +52,9 @@ def replace_element_UID(element):
     if type(element.value) == MultiValue:
         # Example of multi-value UID situation: IrradiationEventUID, (0008,3010) 
         for k, v in enumerate(element.value):
-            element.value[k] = get_new_UID(v)
+            element.value[k] = get_UID(v)
     else:
-        element.value = get_new_UID(element.value)
+        element.value = get_UID(element.value)
 
 def replace_element_date(element):
     """
@@ -102,7 +102,7 @@ def replace_element(element):
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
-                replace_element(sub_element)
+                replace_element(sub_element)                
     elif element.VR == 'DT':
         replace_element_date_time(element)
     else:
