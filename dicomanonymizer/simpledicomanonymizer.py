@@ -102,7 +102,7 @@ def replace_element(element):
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
-                replace_element(sub_element)                
+                replace_element(sub_element)
     elif element.VR == 'DT':
         replace_element_date_time(element)
     else:
