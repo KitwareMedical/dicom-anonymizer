@@ -12,7 +12,7 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 | D_TAGS | replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | Z_TAGS | empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_TAGS | delete | Completely remove the tag |
-| U_TAGS | replace_UID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
+| U_TAGS | replace_UID | Replace all UID's random ones. Same UID will have the same replaced value |
 | Z_D_TAGS | empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_Z_TAGS | delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | X_D_TAGS | delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
