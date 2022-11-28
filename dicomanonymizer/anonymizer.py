@@ -7,6 +7,19 @@ import tqdm
 
 from .simpledicomanonymizer import *
 
+
+def isDICOMType(filePath):
+    """
+    :returns True if input file is a DICOM File. False otherwise.
+    """
+    try:
+        with open(filePath, 'rb') as tempFile:
+            tempFile.seek(0x80, os.SEEK_SET)
+            return tempFile.read(4) == b'DICM'
+    except IOError:
+        return False
+
+
 def anonymize(input_path: str, output_path: str, anonymization_actions: dict, deletePrivateTags: bool) -> None:
     """
     Read data from input path (folder or file) and launch the anonymization.
@@ -42,8 +55,9 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
     else:
         files = os.listdir(input_folder)
         for fileName in files:
-            input_files_list.append(input_folder + '/' + fileName)
-            output_files_list.append(output_folder + '/' + fileName)
+            if isDICOMType(input_folder + '/' + fileName):
+                input_files_list.append(input_folder + '/' + fileName)
+                output_files_list.append(output_folder + '/' + fileName)
 
     progress_bar = tqdm.tqdm(total=len(input_files_list))
     for cpt in range(len(input_files_list)):
