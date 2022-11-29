@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import List
 
@@ -5,6 +6,8 @@ import pydicom
 
 from .dicomfields import *
 from .format_tag import tag_to_hex_strings
+
+log = logging.getLogger(__name__)
 
 dictionary = {}
 
@@ -102,7 +105,14 @@ def replace_element(element):
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
-                replace_element(sub_element)
+                try:
+                    replace_element(sub_element)
+                except NotImplementedError:
+                    log.warning(
+                        "replace_element not yet implemented for subelement "
+                        "with VR {}, will delete_element instead".format(sub_element.VR)
+                    )
+                    delete_element(sub_dataset, sub_element)
     elif element.VR == 'DT':
         replace_element_date_time(element)
     else:
@@ -139,7 +149,14 @@ def empty_element(element):
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
-                empty_element(sub_element)
+                try:
+                    empty_element(sub_element)
+                except NotImplementedError:
+                    log.warning(
+                        "empty_element not yet implemented for subelement "
+                        "with VR {}, will delete_element instead".format(sub_element.VR)
+                    )
+                    delete_element(sub_dataset, sub_element)
     else:
         raise NotImplementedError('Not anonymized. VR {} not yet implemented.'.format(element.VR))
 
