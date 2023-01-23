@@ -56,6 +56,19 @@ def replace_element_UID(element):
     else:
         element.value = get_UID(element.value)
 
+def replace_date_time_element(element):
+    """
+    Handle the anonymization of date and time related elements.
+
+    Date and time elements are all handled in the same way, whether they are emptied or removed.
+    """
+    if element.VR == 'DA':
+        replace_element_date(element)
+    elif element.VR == 'DT':
+        replace_element_date_time(element)
+    elif element.VR == 'TM':
+        replace_element_time(element)
+
 def replace_element_date(element):
     """
     Replace date element's value with '00010101'
@@ -69,42 +82,44 @@ def replace_element_date_time(element):
     """
     element.value = '00010101010101.000000+0000'
 
+def replace_element_time(element):
+    """
+    Replace time element's value with '000000.00'
+    """
+    element.value = '000000.00'
+
 
 def replace_element(element):
     """
     Replace element's value according to it's VR:
-    - DA: cf replace_element_date
-    - TM: replace with '000000.00'
-    - LO, SH, PN, CS: replace with 'Anonymized'
+    - LO, LT, SH, PN, CS, ST, UT: replace with 'Anonymized'
     - UI: cf replace_element_UID
-    - IS: replace with '0'
-    - FD, FL, SS, US: replace with 0
-    - ST: replace with ''
+    - DS and IS: value will be replaced by '0'
+    - FD, FL, SS, US, SL, UL: value will be replaced by 0
+    - DA: value will be replaced by '00010101'
+    - DT: value will be replaced by '00010101010101.000000+0000'
+    - TM: value will be replaced by '000000.00'
+    - UN: value will be replaced by b'Anonymized' (binary string)
     - SQ: call replace_element for all sub elements
-    - DT: cf replace_element_date_time
+
+    See https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
-    if element.VR == 'DA':
-        replace_element_date(element)
-    elif element.VR == 'TM':
-        element.value = '000000.00'
-    elif element.VR in ('LO', 'SH', 'PN', 'CS'):
+    if element.VR in ('LO', 'LT', 'SH', 'PN', 'CS', 'ST', 'UT'):
         element.value = 'Anonymized'
     elif element.VR == 'UI':
         replace_element_UID(element)
-    elif element.VR == 'UL':
-        pass
-    elif element.VR == 'IS':
+    elif element.VR in ('DS', 'IS'):
         element.value = '0'
-    elif element.VR in ('FD', 'FL', 'SS', 'US'):
+    elif element.VR in ('FD', 'FL', 'SS', 'US', 'SL', 'UL'):
         element.value = 0
-    elif element.VR == 'ST':
-        element.value = ''
+    elif element.VR in ('DT', 'DA', 'TM'):
+        replace_date_time_element(element)
+    elif element.VR == 'UN':
+        element.value = b'Anonymized'
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
                 replace_element(sub_element)
-    elif element.VR == 'DT':
-        replace_element_date_time(element)
     else:
         raise NotImplementedError('Not anonymized. VR {} not yet implemented.'.format(element.VR))
 
@@ -122,20 +137,30 @@ def replace(dataset, tag):
 def empty_element(element):
     """
     Clean element according to the element's VR:
-    - SH, PN, UI, LO, CS: value will be set to ''
+    - SH, PN, UI, LO, LT, CS, AS, ST and UT: value will be set to ''
     - DA: value will be replaced by '00010101'
+    - DT: value will be replaced by '00010101010101.000000+0000'
     - TM: value will be replaced by '000000.00'
-    - UL: value will be replaced by 0
+    - UL, FL, FD, SL, SS and US: value will be replaced by 0
+    - DS and IS: value will be replaced by '0'
+    - UN: value will be replaced by: b'' (binary string)
     - SQ: all subelement will be called with "empty_element"
+
+    Date and time related VRs are not emptied by replacing their values with a empty string to keep
+    the consistency with some software who expect a non null value for those VRs.
+
+    See: https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
-    if (element.VR in ('SH', 'PN', 'UI', 'LO', 'CS')):
+    if element.VR in ('SH', 'PN', 'UI', 'LO', 'LT', 'CS', 'AS', 'ST', 'UT'):
         element.value = ''
-    elif element.VR == 'DA':
-        replace_element_date(element)
-    elif element.VR == 'TM':
-        element.value = '000000.00'
-    elif element.VR == 'UL':
+    elif element.VR in ('DT', 'DA', 'TM'):
+        replace_date_time_element(element)
+    elif element.VR in ('UL', 'FL', 'FD', 'SL', 'SS', 'US'):
         element.value = 0
+    elif element.VR in ('DS', 'IS'):
+        element.value == '0'
+    elif element.VR == 'UN':
+        element.value = b''
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
