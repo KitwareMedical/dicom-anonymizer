@@ -29,12 +29,12 @@ The sources files can be packaged by using:
 `python ./setup.py bdist_wheel`
 
 This command will generate a wheel package in `dist` folder which can be then installed as a python package using
-`pip install ./dist/dicom_anonymizer-1.0.7-py2.py3-none-any.whl`
+`pip install ./dist/dicom_anonymizer-1.0.11-py2.py3-none-any.whl`
 
 On Windows, if you see a warning message
-`'./dist/dicom_anonymizer-1.0.7-py2.py3-none-any.whl' looks like a filename, but the file does not exist`,
+`'./dist/dicom_anonymizer-1.0.11-py2.py3-none-any.whl' looks like a filename, but the file does not exist`,
 this could be due to pip not being able to handle relative path (See issue https://github.com/pypa/pip/issues/10808). As a work-around, change directory to `dist` and then install it using
-`pip install dicom_anonymizer-1.0.7-py2.py3-none-any.whl`
+`pip install dicom_anonymizer-1.0.11-py2.py3-none-any.whl`
 
 
 Installing this package will also install an executable named `dicom-anonymizer`. In order to use it, please refer to the next section.
@@ -43,8 +43,8 @@ Installing this package will also install an executable named `dicom-anonymizer`
 
 # How to use it ?
 
-This package allows to anonymize a selection of DICOM field (defined or overrided).
-The way on how the DICOM fields are anonymized can also be overrided.
+This package allows to anonymize a selection of DICOM field (defined or overridden).
+The way on how the DICOM fields are anonymized can also be overridden.
 
 - **[required]** InputPath = Full path to a single DICOM image or to a folder which contains dicom files
 - **[required]** OutputPath = Full path to the anonymized DICOM image or to a folder. This folder has to exist.
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     main()
 ```
 For more information about the pydicom's Dataset, please refer [here](https://github.com/pydicom/pydicom/blob/995ac6493188313f6a2e6355477baba9f543447b/pydicom/dataset.py).
-You can also add a dictionnary as previously :
+You can also add a dictionary as previously :
 ```python
     dictionary = {}
 
@@ -234,7 +234,7 @@ You can also add a dictionnary as previously :
 | empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
-| deleteOrEmplyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
+| deleteOrEmptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 |regexp| These action is not a common action. It allows to use regexp to modify values|
 

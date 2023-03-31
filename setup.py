@@ -24,7 +24,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='dicom_anonymizer',  # Required
-    version='1.0.9',  # Required
+    version='1.0.11',  # Required
     description='Program to anonymize dicom files with default and custom rules', # Optional
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional (see note above)ls
