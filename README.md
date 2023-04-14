@@ -21,6 +21,11 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 | ALL_TAGS | | Contains all previous defined tags
 
 
+# How to install it?
+
+Installation can be done via pip `pip install dicom-anonymizer` or conda `conda install -c conda-forge dicom-anonymizer`.
+
+
 # How to build it ?
 These instructions rely on wheel build-package format. Install it if you have not done it already using:
 `pip install wheel`
