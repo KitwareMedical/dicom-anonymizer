@@ -142,6 +142,16 @@ Example 3: Change the tag value with an arbitrary value
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0010, 0x0010)' 'replace_with_value' 'new_value'
 ```
 
+### DICOMDIR
+
+> DICOMDIR anonymization is not specified. It is therefore discouraged and it is recommended to regenerate new DICOMDIR files after anonymizing the original DICOM files.
+
+DICOMDIR files can have a `(0x0004, 0x1220)  Directory Record Sequence` tag that can contain patient information.  
+However, this tag is not part of the standard tag to anonymize set. If you still want dicom-anonymizer to anonymize it, you have to instruct it explicitly:
+
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0004, 0x1220)' replace
+```
 
 ## Custom rules with dictionary file
 
