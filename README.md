@@ -107,6 +107,16 @@ Example 2: We just want to change the study date from 20080701 to 20080000, then
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0008, 0x0020)' 'regexp' '0701$' '0000'
 ```
 
+### DICOMDIR
+
+> DICOMDIR anonymization is not specified. It is therefore discouraged and it is recommended to regenerate new DICOMDIR files after anonymizing the original DICOM files.
+
+DICOMDIR files can have a `(0x0004, 0x1220)  Directory Record Sequence` tag that can contain patient information.  
+However, this tag is not part of the standard tag to anonymize set. If you still want dicom-anonymizer to anonymize it, you have to instruct it explicitly:
+
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0004, 0x1220)' replace
+```
 
 ## Custom rules with dictionary file
 
