@@ -23,3 +23,11 @@ def test_pydicom_data():
     for tt in dicomfields.U_TAGS:
         if tt in original_ds:
             assert ds[tt] != original_ds[tt]
+
+    for tt in dicomfields.D_TAGS:
+        if tt in original_ds:
+            assert ds[tt] != original_ds[tt]
+
+    for tt in dicomfields.Z_TAGS:
+        if tt in original_ds:
+            assert ds[tt].value in (0, "", "00010101", "000000.00")
