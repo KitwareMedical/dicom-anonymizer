@@ -162,6 +162,8 @@ def main():
     parser.add_argument('--suffix', action='store', help='Suffix that will be added at the end of series description')
     args = parser.parse_args()
 
+    deletePrivateTags = False
+
     input_dicom_path = args.input
     output_dicom_path = args.output
 
@@ -175,14 +177,14 @@ def main():
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
     # It will overrides the default behaviour
-    for i in allTags:
+    for i in ALL_TAGS:
         extraAnonymizationRules[i] = keep
 
     if args.suffix:
         extraAnonymizationRules[(0x0008, 0x103E)] = setupSeriesDescription
 
     # Launch the anonymization
-    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules)
+    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules, deletePrivateTags=deletePrivateTags)
 
 if __name__ == "__main__":
     main()
