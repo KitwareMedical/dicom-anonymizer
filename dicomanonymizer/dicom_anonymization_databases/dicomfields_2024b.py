@@ -1,6 +1,6 @@
 # Tags anonymized in DICOM standard
 # Documentation for groups meaning can be found in default associated actions.
-# https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_e.html
+# https://dicom.nema.org/medical/dicom/2024b/output/chtml/part15/chapter_E.html#table_E.1-1
 
 # Replaced tags
 D_TAGS = [

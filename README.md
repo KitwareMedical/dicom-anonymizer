@@ -3,7 +3,8 @@
 Python package to anonymize DICOM files.
 The anonymization answer to the standard . More information about dicom fields for anonymization can be found [here](https://dicom.nema.org/medical/dicom/current/output/html/part15.html#table_E.1-1).
 
-The default behaviour of this package is to anonymize DICOM fields referenced in [dicomfields](dicomanonymizer/dicomfields.py).
+The default behaviour of this package is to anonymize DICOM fields referenced in the 2023e DICOM standard. These fields are referenced in [dicomfields](dicomanonymizer/dicom_anonymization_databases/dicomfields_2023.py).  
+Another standard can be selected, see *Change the DICOM anonymization standard*. 
 
 Dicom fields are separated into different groups. Each groups will be anonymized in a different way.
 
@@ -204,6 +205,8 @@ def main():
     )
     args = parser.parse_args()
 
+    deletePrivateTags = False
+
     input_dicom_path = args.input
     output_dicom_path = args.output
 
@@ -315,3 +318,17 @@ You can also add `extra_anonymization_rules` as above:
 ** VR: Value Representation
 
 Work originally done by Edern Haumont
+
+# Change the DICOM anonymization standard
+
+You can customize the DICOM standard that will be used to anonymize the dataset by giving an argument `base_rules_gen` to the function `anonymize_dicom_file` or `anonymize_dataset`.  
+The value should be a function returning a dict of anonymization rules. Use the function `initialize_actions` to create such dict from a anonymization database from the folder `dicomanonymizer/dicom_anonymization_databases`.
+
+Example:
+```python
+from dicomanonymizer.simpledicomanonymizer import anonymize_dataset, initialize_actions
+
+anonymize_dataset(
+    dataset, base_rules_gen=lambda: initialize_actions("dicomfields_2024b")
+)
+```
