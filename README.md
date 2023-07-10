@@ -174,6 +174,8 @@ def main():
     )
     args = parser.parse_args()
 
+    deletePrivateTags = False
+
     input_dicom_path = args.input
     output_dicom_path = args.output
 
