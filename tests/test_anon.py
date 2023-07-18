@@ -8,6 +8,7 @@ from dicomanonymizer import anonymize_dataset
 from pathlib import Path
 import warnings
 
+# Ignore warnings from pydicom validation
 settings.writing_validation_mode = IGNORE
 settings.reading_validation_mode = IGNORE
 
@@ -15,6 +16,8 @@ warnings.filterwarnings("ignore")
 
 
 def get_all_failed():
+    # The following files are intended to fail dcmread
+    # No point including them for anonymization testing
     dcmread_failed = [
         "ExplVR_BigEndNoMeta.dcm",
         "ExplVR_LitEndNoMeta.dcm",
@@ -23,6 +26,7 @@ def get_all_failed():
         "OT-PAL-8-face.dcm",
     ]
 
+    # TODO: Investigate why these fail replacement test of anonymization
     replaced_failed = [
         "693_J2KI.dcm",
         "JPEG-lossy.dcm",
@@ -53,12 +57,14 @@ def get_all_failed():
         "test-SR.dcm",
     ]
 
+    # TODO: Investigate why these fail deletion test of anonymization
     deleted_failed = [
         "color3d_jpeg_baseline.dcm",
         "JPGLosslessP14SV1_1s_1f_8b.dcm",
         "test-SR.dcm",
     ]
 
+    # TODO: Investigate why these fail emptying test of anonymization
     emptied_failed = [
         "JPGLosslessP14SV1_1s_1f_8b.dcm",
         "test-SR.dcm",
