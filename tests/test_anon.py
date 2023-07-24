@@ -1,12 +1,13 @@
+import pytest
+import warnings
+
+from pathlib import Path
 from functools import lru_cache
+from pydicom import dcmread
 from pydicom.config import settings, IGNORE
 from pydicom.data import get_testdata_files
-from pydicom import dcmread
-import pytest
-from dicomanonymizer import dicomfields
-from dicomanonymizer import anonymize_dataset
-from pathlib import Path
-import warnings
+
+from dicomanonymizer import anonymize_dataset, dicomfields
 
 # Ignore warnings from pydicom validation
 settings.writing_validation_mode = IGNORE
