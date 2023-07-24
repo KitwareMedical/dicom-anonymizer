@@ -70,12 +70,7 @@ def get_all_failed():
         "JPGLosslessP14SV1_1s_1f_8b.dcm",
         "test-SR.dcm",
     ]
-
-    all_failed = list(dcmread_failed)
-    all_failed.extend(replaced_failed)
-    all_failed.extend(deleted_failed)
-    all_failed.extend(emptied_failed)
-    return all_failed
+    return dcmread_failed + replaced_failed + deleted_failed + emptied_failed
 
 
 @lru_cache(maxsize=None)
@@ -102,13 +97,14 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
 
 
 def test_changed_tags_are_replaced(orig_anon_dataset):
-    changed_tags = []
-    changed_tags.extend(dicomfields.U_TAGS)
-    changed_tags.extend(dicomfields.D_TAGS)
-    changed_tags.extend(dicomfields.Z_D_TAGS)
-    changed_tags.extend(dicomfields.X_D_TAGS)
-    changed_tags.extend(dicomfields.X_Z_D_TAGS)
-    changed_tags.extend(dicomfields.X_Z_U_STAR_TAGS)
+    changed_tags = (
+        dicomfields.U_TAGS
+        + dicomfields.D_TAGS
+        + dicomfields.Z_D_TAGS
+        + dicomfields.X_D_TAGS
+        + dicomfields.X_Z_D_TAGS
+        + dicomfields.X_Z_U_STAR_TAGS
+    )
 
     orig_ds, anon_ds = orig_anon_dataset
 
