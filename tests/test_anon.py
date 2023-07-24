@@ -115,9 +115,7 @@ def test_changed_tags_are_replaced(orig_anon_dataset):
 
 def test_empty_tags_are_emptied(orig_anon_dataset):
     empty_values = (0, "", "00010101", "000000.00")
-    empty_tags = []
-    empty_tags.extend(dicomfields.Z_TAGS)
-    empty_tags.extend(dicomfields.X_Z_TAGS)
+    empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
 
     orig_ds, anon_ds = orig_anon_dataset
 
