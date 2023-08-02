@@ -2,3 +2,5 @@ Data
 env
 __pycache__
 .vscode
+build
+*.egg-info
