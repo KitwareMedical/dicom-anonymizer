@@ -1,6 +1,7 @@
 import argparse
 import ast
 import json
+import pkg_resources
 import os
 import sys
 import tqdm
@@ -97,6 +98,7 @@ def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict
 
 
 def main(defined_action_map = {}):
+    version_info = pkg_resources.require("dicom_anonymizer")[0].version
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
@@ -104,6 +106,10 @@ def main(defined_action_map = {}):
     '\'regexp\' action takes two arguments: '\
         '1. regexp to find substring '\
         '2. the string that will replace the previous found string')
+    parser.add_argument('-v',
+                        '--version',
+                        action='version',
+                        version=f'%(prog)s {version_info}')                        
     parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
     parser.add_argument('--keepPrivateTags', action='store_true', dest='keepPrivateTags', help='If used, then private tags won\'t be deleted')
     parser.set_defaults(keepPrivateTags=False)
