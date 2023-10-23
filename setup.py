@@ -5,7 +5,7 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages, setuptools
+from setuptools import setup, find_packages
 from os import path
 # io.open is needed for projects that support Python 2.7
 # It ensures open() defaults to text mode with universal newlines,
@@ -59,7 +59,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=setuptools.find_packages(),  # Required
+    packages=find_packages(),  # Required
 
     # Define an executable calls dicom-anonymizer from a specific file
     entry_points={
