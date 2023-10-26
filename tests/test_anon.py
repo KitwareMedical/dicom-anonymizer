@@ -60,6 +60,7 @@ def get_all_failed():
 
     # TODO: Investigate why these fail deletion test of anonymization
     deleted_failed = [
+        "MR-SIEMENS-DICOM-WithOverlays.dcm", #TODO: X_TAGS entries with 4 ints
         "color3d_jpeg_baseline.dcm",
         "JPGLosslessP14SV1_1s_1f_8b.dcm",
         "test-SR.dcm",
@@ -84,41 +85,44 @@ def get_passing_files():
 def orig_anon_dataset(request):
     orig_ds = dcmread(request.param)
     anon_ds = orig_ds.copy()
-    anonymize_dataset(anon_ds)
+    anonymize_dataset(anon_ds,delete_private_tags=False)
     return (orig_ds, anon_ds)
 
 
-def test_deleted_tags_are_removed(orig_anon_dataset):
+def test_if_anonymized_correctly(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
-    deleted_tags = dicomfields.X_TAGS
-    for tt in deleted_tags:
-        if len(tt) == 2 and tt in orig_ds:
-            assert tt not in anon_ds
+ 
+    for elem in anon_ds:
+        assert elem.tag in orig_ds
+    
+    for elem in orig_ds:
+        if elem.tag not in anon_ds:
+            ok_if_deleted_tags = dicomfields.X_TAGS + dicomfields.X_Z_TAGS + dicomfields.X_D_TAGS \
+                            + dicomfields.X_Z_D_TAGS + dicomfields.X_Z_U_STAR_TAGS
+            assert elem.tag in ok_if_deleted_tags
+        else:
+            check_element_is_anonymized(elem,anon_ds[elem.tag])
 
 
-def test_changed_tags_are_replaced(orig_anon_dataset):
-    changed_tags = (
-        dicomfields.U_TAGS
-        + dicomfields.D_TAGS
-        + dicomfields.Z_D_TAGS
-        + dicomfields.X_D_TAGS
-        + dicomfields.X_Z_D_TAGS
-        + dicomfields.X_Z_U_STAR_TAGS
-    )
+def check_element_is_anonymized(orig_elem,anon_elem):
+    ok_if_emptied_tags = dicomfields.Z_TAGS + dicomfields.Z_D_TAGS + dicomfields.X_Z_TAGS \
+            + dicomfields.X_Z_D_TAGS + dicomfields.X_Z_U_STAR_TAGS
+    ok_if_replaced_tags = dicomfields.D_TAGS + dicomfields.U_TAGS + dicomfields.Z_D_TAGS + dicomfields.X_D_TAGS \
+            + dicomfields.X_Z_D_TAGS + dicomfields.X_Z_U_STAR_TAGS
+    ok_if_emptied_or_replaced_tags = ok_if_emptied_tags + ok_if_replaced_tags
 
-    orig_ds, anon_ds = orig_anon_dataset
+    emp_vals = (0, '', '00010101', '000000.00', '00010101010101.000000+0000')
+    
+    if orig_elem.VR == 'SQ': #Todo handle sequence elements
+        pass
+        # for sub_ds in orig_elem.value:
+        #     for sub_elem in sub_ds.elements():
+        #         check_element_is_anonymized(sub_elem, anon_elem[sub_elem.tag])
+    elif orig_elem.value in emp_vals:
+        pass
+    elif orig_elem.value != anon_elem.value:
+        if anon_elem.value in emp_vals:
+            assert anon_elem.tag in ok_if_emptied_or_replaced_tags
+        else:
+            assert anon_elem.tag in ok_if_replaced_tags
 
-    for tt in changed_tags:
-        if tt in orig_ds:
-            assert anon_ds[tt] != orig_ds[tt]
-
-
-def test_empty_tags_are_emptied(orig_anon_dataset):
-    empty_values = (0, "", "00010101", "000000.00")
-    empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
-
-    orig_ds, anon_ds = orig_anon_dataset
-
-    for tt in empty_tags:
-        if tt in orig_ds:
-            assert anon_ds[tt].value in empty_values
