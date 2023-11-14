@@ -1,7 +1,7 @@
 import argparse
 import ast
+import importlib.metadata
 import json
-import pkg_resources
 import os
 import sys
 import tqdm
@@ -98,7 +98,7 @@ def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict
 
 
 def main(defined_action_map = {}):
-    version_info = pkg_resources.require("dicom_anonymizer")[0].version
+    version_info = importlib.metadata.version("dicom_anonymizer")
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
