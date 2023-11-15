@@ -25,7 +25,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "setuptools", # TODO: Remove this once pydicom removes dependency on setuptools
+  "setuptools", # Needed to load pydicom's test files
 ]
 
 [project.scripts]
