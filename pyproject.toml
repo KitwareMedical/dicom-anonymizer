@@ -38,9 +38,3 @@ dicom-anonymizer = "dicomanonymizer.anonymizer:main"
 [tool.setuptools.packages]
 find = {}  # Scanning implicit namespaces is active by default
 
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.distutils.bdist_wheel]
-universal = 1
