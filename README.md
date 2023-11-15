@@ -182,46 +182,13 @@ In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
 - A dictionary which map your functions to a tag
 
-## Anonymize dicom tags without dicom file
+## Anonymize dicom tags for a dataset
 
-If for some reason, you need to anonymize dicom fields without initial dicom file (extracted from a database for example). Here is how you can do it:
-```python
-from dicomanonymizer import *
+You can also anonymize dicom fields in-place for pydicom's DataSet using `anonymize_dataset`. See example application
+in the `examples` folder.
 
-def main():
+For more information about the pydicom's Dataset, please refer [here](https://pydicom.github.io/pydicom/stable/reference/generated/pydicom.dataset.Dataset.html).
 
-  # Create a list of tags object that should contains id, type and value
-  fields = [
-    { # Replaced by Anonymized
-      'id': (0x0040, 0xA123),
-      'type': 'LO',
-      'value': 'Annie de la Fontaine',
-    },
-    { # Replaced with empty value
-      'id': (0x0008, 0x0050),
-      'type': 'TM',
-      'value': 'bar',
-    },
-    { # Deleted
-      'id': (0x0018, 0x4000),
-      'type': 'VR',
-      'value': 'foo',
-    }
-  ]
-
-  # Create a readable dataset for pydicom
-  data = pydicom.Dataset()
-
-  # Add each field into the dataset
-  for field in fields:
-    data.add_new(field['id'], field['type'], field['value'])
-
-  anonymize_dataset(data)
-
-if __name__ == "__main__":
-    main()
-```
-For more information about the pydicom's Dataset, please refer [here](https://github.com/pydicom/pydicom/blob/995ac6493188313f6a2e6355477baba9f543447b/pydicom/dataset.py).
 You can also add a dictionary as previously :
 ```python
     dictionary = {}
