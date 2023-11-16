@@ -6,7 +6,7 @@ authors = [
 ]
 description = "Program to anonymize dicom files with default and custom rules"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 classifiers = [
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
