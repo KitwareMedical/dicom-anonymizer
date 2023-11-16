@@ -21,7 +21,7 @@ def isDICOMType(filePath):
         return False
 
 
-def anonymize(input_path: str, output_path: str, anonymization_actions: dict, deletePrivateTags: bool) -> None:
+def anonymize(input_path: str, output_path: str, anonymization_actions: dict, delete_private_tags: bool) -> None:
     """
     Read data from input path (folder or file) and launch the anonymization.
 
@@ -62,7 +62,7 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
 
     progress_bar = tqdm.tqdm(total=len(input_files_list))
     for cpt in range(len(input_files_list)):
-        anonymize_dicom_file(input_files_list[cpt], output_files_list[cpt], anonymization_actions, deletePrivateTags)
+        anonymize_dicom_file(input_files_list[cpt], output_files_list[cpt], anonymization_actions, delete_private_tags)
         progress_bar.update(1)
 
     progress_bar.close()

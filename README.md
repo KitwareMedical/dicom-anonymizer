@@ -141,9 +141,10 @@ If you want to use the **regexp** action in a dictionary:
 
 Here is a small example which keeps all metadata but updates the series description
 by adding a suffix passed as a parameter.
+
 ```python
 import argparse
-from dicomanonymizer import *
+from dicomanonymizer import ALL_TAGS, anonymize, keep
 
 def main():
     parser = argparse.ArgumentParser(add_help=True)
@@ -155,28 +156,30 @@ def main():
     input_dicom_path = args.input
     output_dicom_path = args.output
 
-    extraAnonymizationRules = {}
+    extra_anonymization_rules = {}
 
-    def setupSeriesDescription(dataset, tag):
+    def setup_series_description(dataset, tag):
         element = dataset.get(tag)
         if element is not None:
-            element.value = element.value + '-' + args.suffix
+            element.value = f'{element.value}-{args.suffix}'
 
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
     # It will overrides the default behaviour
-    for i in allTags:
-        extraAnonymizationRules[i] = keep
+    for i in ALL_TAGS:
+        extra_anonymization_rules[i] = keep
 
     if args.suffix:
-        extraAnonymizationRules[(0x0008, 0x103E)] = setupSeriesDescription
+        extra_anonymization_rules[(0x0008, 0x103E)] = setup_series_description
 
     # Launch the anonymization
-    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules)
+    anonymize(input_dicom_path, output_dicom_path, extra_anonymization_rules, delete_private_tags=False)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 ```
+
+See the full application in the `examples` folder.
 
 In your own file, you'll have to define:
 - Your custom functions. Be careful, your functions always have in inputs a dataset and a tag
@@ -184,22 +187,27 @@ In your own file, you'll have to define:
 
 ## Anonymize dicom tags for a dataset
 
-You can also anonymize dicom fields in-place for pydicom's DataSet using `anonymize_dataset`. See example application
-in the `examples` folder.
+You can also anonymize dicom fields in-place for pydicom's DataSet using `anonymize_dataset`. See this example:
+```python
+from dicomanonymizer import anonymize_dataset
+from pydicom.data import get_testdata_file
+from pydicom import dcmread
+
+def main():
+    data_ds = dcmread(get_testdata_file("CT_small.dcm"))
+    anonymize_dataset(data_ds, delete_private_tags=True) # Anonymization is done in-place
+
+if __name__ == "__main__":
+    main()
+```
+
+See the full application in the `examples` folder.
 
 For more information about the pydicom's Dataset, please refer [here](https://pydicom.github.io/pydicom/stable/reference/generated/pydicom.dataset.Dataset.html).
 
-You can also add a dictionary as previously :
+You can also add `extra_anonymization_rules` as above:
 ```python
-    dictionary = {}
-
-    def newMethod(dataset, tag):
-        element = dataset.get(tag)
-        if element is not None:
-            element.value = element.value + '- generated with new method'
-
-    dictionary[(0x0008, 0x103E)] = newMethod
-    anonymize_dataset(data, dictionary)
+    anonymize_dataset(data_ds, extra_anonymization_rules, delete_private_tags=True)
 ```
 
 # Actions list
