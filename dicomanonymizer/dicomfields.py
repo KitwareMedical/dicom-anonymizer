@@ -262,6 +262,7 @@ X_Z_TAGS = [
 # Replace element according to the VR
 X_D_TAGS = [
     (0x0008, 0x002A), # Acquisition DateTime
+    (0x0008, 0x0012), # Instance Creation Date
     (0x0018, 0x1400), # Acquisition Device Processing Description
     (0x0018, 0x700A), # Detector ID
     (0x0008, 0x1072), # Operators' Identification Sequence
@@ -273,6 +274,7 @@ X_D_TAGS = [
 # Replace element according to the VR
 X_Z_D_TAGS = [
     (0x0018, 0x1000), # Device Serial Number
+    (0x0008, 0x0013), # Instance Creation Time
     (0x0008, 0x0082), # Institution Code Sequence
     (0x0008, 0x0080), # Institution Name
     (0x0008, 0x1070), # Operators' Name
