@@ -193,7 +193,8 @@ import pydicom
 
 from dicomanonymizer import anonymize_dataset
 
-def test_anonymization_without_dicom_file():
+def main():
+
     # Create a list of tags object that should contains id, type and value
     fields = [
         { # Replaced by Anonymized
@@ -221,6 +222,9 @@ def test_anonymization_without_dicom_file():
         data.add_new(field['id'], field['type'], field['value'])
 
     anonymize_dataset(data)
+
+if __name__ == "__main__":
+    main()
 ```
 
 See the full application in the `examples` folder.
