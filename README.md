@@ -189,16 +189,38 @@ In your own file, you'll have to define:
 
 You can also anonymize dicom fields in-place for pydicom's DataSet using `anonymize_dataset`. See this example:
 ```python
+import pydicom
+
 from dicomanonymizer import anonymize_dataset
-from pydicom.data import get_testdata_file
-from pydicom import dcmread
 
-def main():
-    data_ds = dcmread(get_testdata_file("CT_small.dcm"))
-    anonymize_dataset(data_ds, delete_private_tags=True) # Anonymization is done in-place
+def test_anonymization_without_dicom_file():
+    # Create a list of tags object that should contains id, type and value
+    fields = [
+        { # Replaced by Anonymized
+        'id': (0x0040, 0xA123),
+        'type': 'LO',
+        'value': 'Annie de la Fontaine',
+        },
+        { # Replaced with empty value
+        'id': (0x0008, 0x0050),
+        'type': 'TM',
+        'value': 'bar',
+        },
+        { # Deleted
+        'id': (0x0018, 0x4000),
+        'type': 'VR',
+        'value': 'foo',
+        }
+    ]
 
-if __name__ == "__main__":
-    main()
+    # Create a readable dataset for pydicom
+    data = pydicom.Dataset()
+
+    # Add each field into the dataset
+    for field in fields:
+        data.add_new(field['id'], field['type'], field['value'])
+
+    anonymize_dataset(data)
 ```
 
 See the full application in the `examples` folder.
