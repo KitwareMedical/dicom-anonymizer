@@ -432,6 +432,8 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
             # The meta header information is located in the `file_meta` dataset
             # For tags with tag group `0x0002` we thus apply the action to the `file_meta` dataset
             if tag[0] == 0x0002:
+                if not hasattr(dataset, 'file_meta'):
+                    continue
                 # Apply rule to meta information header
                 action(dataset.file_meta, tag)
             else:
