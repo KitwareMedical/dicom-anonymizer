@@ -107,6 +107,16 @@ Example 2: We just want to change the study date from 20080701 to 20080000, then
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0008, 0x0020)' 'regexp' '0701$' '0000'
 ```
 
+### DICOMDIR
+
+> DICOMDIR anonymization is not specified. It is therefore discouraged and it is recommended to regenerate new DICOMDIR files after anonymizing the original DICOM files.
+
+DICOMDIR files can have a `(0x0004, 0x1220)  Directory Record Sequence` tag that can contain patient information.  
+However, this tag is not part of the standard tag to anonymize set. If you still want dicom-anonymizer to anonymize it, you have to instruct it explicitly:
+
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0004, 0x1220)' replace
+```
 
 ## Custom rules with dictionary file
 
@@ -152,6 +162,8 @@ def main():
     parser.add_argument('--suffix', action='store', help='Suffix that will be added at the end of series description')
     args = parser.parse_args()
 
+    deletePrivateTags = False
+
     input_dicom_path = args.input
     output_dicom_path = args.output
 
@@ -165,14 +177,14 @@ def main():
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
     # It will overrides the default behaviour
-    for i in allTags:
+    for i in ALL_TAGS:
         extraAnonymizationRules[i] = keep
 
     if args.suffix:
         extraAnonymizationRules[(0x0008, 0x103E)] = setupSeriesDescription
 
     # Launch the anonymization
-    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules)
+    anonymize(input_dicom_path, output_dicom_path, extraAnonymizationRules, deletePrivateTags=deletePrivateTags)
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,8 @@
-Data
-env
-__pycache__
-.vscode
-build
 *.egg-info
+.python-version
+.vscode
+Data
+__pycache__
+build
+dist
+env
