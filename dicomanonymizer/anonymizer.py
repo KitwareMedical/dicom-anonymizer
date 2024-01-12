@@ -1,7 +1,7 @@
 import argparse
 import ast
+import importlib.metadata
 import json
-import pkg_resources
 import os
 import sys
 import tqdm
@@ -21,7 +21,7 @@ def isDICOMType(filePath):
         return False
 
 
-def anonymize(input_path: str, output_path: str, anonymization_actions: dict, deletePrivateTags: bool) -> None:
+def anonymize(input_path: str, output_path: str, anonymization_actions: dict, delete_private_tags: bool) -> None:
     """
     Read data from input path (folder or file) and launch the anonymization.
 
@@ -62,7 +62,7 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
 
     progress_bar = tqdm.tqdm(total=len(input_files_list))
     for cpt in range(len(input_files_list)):
-        anonymize_dicom_file(input_files_list[cpt], output_files_list[cpt], anonymization_actions, deletePrivateTags)
+        anonymize_dicom_file(input_files_list[cpt], output_files_list[cpt], anonymization_actions, delete_private_tags)
         progress_bar.update(1)
 
     progress_bar.close()
@@ -98,7 +98,7 @@ def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict
 
 
 def main(defined_action_map = {}):
-    version_info = pkg_resources.require("dicom_anonymizer")[0].version
+    version_info = importlib.metadata.version("dicom_anonymizer")
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')

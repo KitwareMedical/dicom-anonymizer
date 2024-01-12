@@ -1,0 +1,2 @@
+# Ignore Pipfile.lock to allow support across multiple Python and operating system versions.
+Pipfile.lock 

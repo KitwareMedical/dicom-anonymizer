@@ -1,0 +1,4 @@
+[packages]
+# dicom-anonymizer = "*" # For 'released' version 
+dicom-anonymizer = {file = ".."} # For local version
+pydicom = "*"
