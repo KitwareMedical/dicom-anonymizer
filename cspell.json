@@ -16,6 +16,7 @@
         "anonymization",
         "argparse",
         "bdist",
+        "behaviour",
         "dcmread",
         "DICM",
         "DICOM",
