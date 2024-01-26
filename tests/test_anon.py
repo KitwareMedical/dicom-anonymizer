@@ -30,7 +30,7 @@ def get_all_failed():
     # TODO: Investigate why these fail replacement test of anonymization
     # Error message: AttributeError: can't set attribute
     # when attempting to anonymize tag in dicomanonymizer\simpledicomanonymizer.py:108
-    # See issue ???
+    # See issue https://github.com/KitwareMedical/dicom-anonymizer/issues/63
     replaced_failed = [
         "reportsi.dcm",
         "reportsi_with_empty_number_tags.dcm",
@@ -66,8 +66,7 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
             len(tt) == 2 and tt in orig_ds
         ):  # sourcery skip: merge-nested-ifs, no-conditionals-in-tests
             # TODO: Investigate why Date type are replaced instead of deleted
-            # See item #
-
+            # See issue https://github.com/KitwareMedical/dicom-anonymizer/issues/56
             if orig_ds[tt].VR != "DA":  # sourcery skip: no-conditionals-in-tests
                 assert (
                     tt not in anon_ds
