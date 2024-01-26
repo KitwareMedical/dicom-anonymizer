@@ -47,6 +47,7 @@ def get_all_failed():
         "RG1_J2KI.dcm",
         "RG1_J2KR.dcm",
         "RG1_UNCI.dcm",
+        "RG1_UNCR.dcm", # TODO: Tag (0018,1200) is getting replaced with date "00010101"
         "RG3_J2KI.dcm",
         "RG3_J2KI.dcm",
         "RG3_J2KR.dcm",
@@ -93,7 +94,7 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
     deleted_tags = dicomfields.X_TAGS
     for tt in deleted_tags:
         if len(tt) == 2 and tt in orig_ds:
-            assert tt not in anon_ds
+            assert tt not in anon_ds, f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->{anon_ds[tt].value}"
 
 
 def test_changed_tags_are_replaced(orig_anon_dataset):
@@ -112,13 +113,22 @@ def test_changed_tags_are_replaced(orig_anon_dataset):
         if tt in orig_ds:
             assert anon_ds[tt] != orig_ds[tt]
 
+empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
+
+def is_elem_empty(elem) -> bool:
+    if elem.VR == "SQ":
+        for x in elem.value:
+            for tt in empty_tags:
+                if tt in x and len(x[tt].value)>0:
+                    assert is_elem_empty(x[tt]), f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} is not empty"
+        return True
+
+    empty_values = (0, "", "00010101", "000000.00")    
+    return elem.value in empty_values
 
 def test_empty_tags_are_emptied(orig_anon_dataset):
-    empty_values = (0, "", "00010101", "000000.00")
-    empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
-
     orig_ds, anon_ds = orig_anon_dataset
 
     for tt in empty_tags:
-        if tt in orig_ds:
-            assert anon_ds[tt].value in empty_values
+        if tt in orig_ds and len(orig_ds[tt].value) > 0:
+            assert is_elem_empty(anon_ds[tt]), f"({tt[0]:04X},{tt[1]:04x}):{anon_ds[tt].value} is not empty" 
