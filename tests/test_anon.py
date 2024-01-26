@@ -28,34 +28,13 @@ def get_all_failed():
     ]
 
     # TODO: Investigate why these fail replacement test of anonymization
+    # Error message: AttributeError: can't set attribute
+    # when attempting to anonymize tag in dicomanonymizer\simpledicomanonymizer.py:108
+    # See issue ???
     replaced_failed = [
-        "693_J2KI.dcm",
-        "JPEG-lossy.dcm",
-        "JPEG2000-embedded-sequence-delimiter.dcm",
-        "JPEG2000.dcm",
-        "JPGExtended.dcm",
-        "reportsi.dcm",
-        "reportsi_with_empty_number_tags.dcm",
-        "SC_rgb_gdcm_KY.dcm",
-        "SC_rgb_jpeg_lossy_gdcm.dcm",
-        "693_UNCI.dcm",
-        "JPEG-LL.dcm",
-        "JPEG2000_UNC.dcm",
-        "MR2_J2KI.dcm",
-        "MR2_J2KR.dcm",
-        "MR2_UNCI.dcm",
-        "RG1_J2KI.dcm",
-        "RG1_J2KR.dcm",
-        "RG1_UNCI.dcm",
-        "RG3_J2KI.dcm",
-        "RG3_J2KI.dcm",
-        "RG3_J2KR.dcm",
-        "RG3_UNCI.dcm",
-        "SC_rgb_gdcm2k_uncompressed.dcm",
-        "US1_J2KI.dcm",
-        "US1_J2KR.dcm",
-        "US1_UNCI.dcm",
-        "test-SR.dcm",
+         "reportsi.dcm",
+         "reportsi_with_empty_number_tags.dcm",
+         "test-SR.dcm",
     ]
 
     deleted_failed = []
@@ -88,22 +67,35 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
             if orig_ds[tt].VR != "DA":
                 assert tt not in anon_ds, f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->{anon_ds[tt].value}"
 
+changed_tags = (
+    dicomfields.U_TAGS
+    + dicomfields.D_TAGS
+    + dicomfields.Z_D_TAGS
+    + dicomfields.X_D_TAGS
+    + dicomfields.X_Z_D_TAGS
+    + dicomfields.X_Z_U_STAR_TAGS
+)
+
+empty_values = (0, "", "00010101", "000000.00")    
+
+def is_elem_replaced(orig, anon) -> bool:
+    if orig.VR == "SQ":
+        for (x, y) in zip(orig.value, anon.value):
+            for tt in changed_tags:
+                if tt in x and len(x[tt].value)>0:
+                    assert tt in y, f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value}->missing!"
+                    assert is_elem_replaced(x[tt], y[tt]), f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} not replaced"
+        return True
+
+    return orig.value != anon.value if orig.value not in empty_values else True
 
 def test_changed_tags_are_replaced(orig_anon_dataset):
-    changed_tags = (
-        dicomfields.U_TAGS
-        + dicomfields.D_TAGS
-        + dicomfields.Z_D_TAGS
-        + dicomfields.X_D_TAGS
-        + dicomfields.X_Z_D_TAGS
-        + dicomfields.X_Z_U_STAR_TAGS
-    )
-
     orig_ds, anon_ds = orig_anon_dataset
 
     for tt in changed_tags:
         if tt in orig_ds:
-            assert anon_ds[tt] != orig_ds[tt]
+            assert tt in anon_ds, f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->missing!"
+            assert is_elem_replaced(orig_ds[tt], anon_ds[tt]), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value} not replaced"
 
 empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
 
@@ -115,7 +107,6 @@ def is_elem_empty(elem) -> bool:
                     assert is_elem_empty(x[tt]), f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} is not empty"
         return True
 
-    empty_values = (0, "", "00010101", "000000.00")    
     return elem.value in empty_values
 
 def test_empty_tags_are_emptied(orig_anon_dataset):
