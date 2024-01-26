@@ -13,12 +13,31 @@
     ],
     // words - list of words to be always considered correct
     "words": [
+        "anonymization",
+        "argparse",
+        "bdist",
         "dcmread",
+        "DICM",
         "DICOM",
+        "dicomanonymizer",
         "dicomfields",
+        "Edern",
+        "Fiducials",
+        "Fontaine",
+        "Haumont",
+        "Kitware",
+        "Laurenn",
         "multival",
+        "pipenv",
+        "Pipfile",
         "pydicom",
+        "pytest",
+        "Radiopharmaceutical",
+        "setuptools",
         "simpledicomanonymizer",
+        "tqdm",
+        "venv",
+        "virtualenv",
         "xgggg"
     ]
     // flagWords - list of words to be always considered incorrect
