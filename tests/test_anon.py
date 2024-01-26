@@ -60,11 +60,15 @@ def orig_anon_dataset(request):
 def test_deleted_tags_are_removed(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
     deleted_tags = dicomfields.X_TAGS
-    for tt in deleted_tags:
-        if len(tt) == 2 and tt in orig_ds:
+
+    for tt in deleted_tags:  # sourcery skip: no-loop-in-tests
+        if (
+            len(tt) == 2 and tt in orig_ds
+        ):  # sourcery skip: merge-nested-ifs, no-conditionals-in-tests
             # TODO: Investigate why Date type are replaced instead of deleted
             # See item #
-            if orig_ds[tt].VR != "DA":
+
+            if orig_ds[tt].VR != "DA":  # sourcery skip: no-conditionals-in-tests
                 assert (
                     tt not in anon_ds
                 ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->{anon_ds[tt].value}"
@@ -99,8 +103,8 @@ def is_elem_replaced(orig, anon) -> bool:
 def test_changed_tags_are_replaced(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
 
-    for tt in changed_tags:
-        if tt in orig_ds:
+    for tt in changed_tags:  # sourcery skip: no-loop-in-tests
+        if tt in orig_ds:  # sourcery skip: no-conditionals-in-tests
             assert (
                 tt in anon_ds
             ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->missing!"
@@ -128,8 +132,10 @@ def is_elem_empty(elem) -> bool:
 def test_empty_tags_are_emptied(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
 
-    for tt in empty_tags:
-        if tt in orig_ds and len(orig_ds[tt].value) > 0:
+    for tt in empty_tags:  # sourcery skip: no-loop-in-tests
+        if (
+            tt in orig_ds and len(orig_ds[tt].value) > 0
+        ):  # sourcery skip: no-conditionals-in-tests
             assert is_elem_empty(
                 anon_ds[tt]
             ), f"({tt[0]:04X},{tt[1]:04x}):{anon_ds[tt].value} is not empty"
