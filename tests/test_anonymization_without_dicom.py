@@ -27,7 +27,7 @@ def test_anonymization_without_dicom_file():
     data = pydicom.Dataset()
 
     # Add each field into the dataset
-    for field in fields:
+    for field in fields:  # sourcery skip: no-loop-in-tests
         data.add_new(field["id"], field["type"], field["value"])
 
     anonymize_dataset(data)
