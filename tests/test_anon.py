@@ -43,6 +43,7 @@ def get_passing_files():
 @pytest.fixture(scope="module", params=get_passing_files())
 def orig_anon_dataset(request):
     orig_ds = dcmread(request.param)
+    orig_ds.filename = None # Non-None value causes warnings in copy(). Not needed for this testing
     anon_ds = orig_ds.copy()
     anonymize_dataset(anon_ds)
     return (orig_ds, anon_ds)
