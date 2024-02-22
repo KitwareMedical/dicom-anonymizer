@@ -105,7 +105,7 @@ def replace_element(element):
     See https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
     if element.VR in ('LO', 'LT', 'SH', 'PN', 'CS', 'ST', 'UT'):
-        element.value = 'Anonymized'
+        element.value = 'ANONYMIZED' # CS VR accepts only uppercase characters
     elif element.VR == 'UI':
         replace_element_UID(element)
     elif element.VR in ('DS', 'IS'):
@@ -118,8 +118,16 @@ def replace_element(element):
         element.value = b'Anonymized'
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
-            for sub_element in sub_dataset.elements():
-                replace_element(sub_element)
+            for sub_element in sub_dataset.elements():                
+                if type(sub_element) == pydicom.dataelem.RawDataElement:
+                    # RawDataElement is a NamedTuple, so cannot set its value attribute.
+                    # Convert it to a DataElement, replace value, and set it back.
+                    # Found in https://github.com/KitwareMedical/dicom-anonymizer/issues/63
+                    e2 = pydicom.dataelem.DataElement_from_raw(sub_element)
+                    replace_element(e2)
+                    sub_dataset.add(e2)
+                else:
+                    replace_element(sub_element)
     else:
         raise NotImplementedError('Not anonymized. VR {} not yet implemented.'.format(element.VR))
 

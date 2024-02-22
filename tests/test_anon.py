@@ -27,16 +27,7 @@ def get_all_failed():
         "OT-PAL-8-face.dcm",
     ]
 
-    # TODO: Investigate why these fail replacement test of anonymization
-    # Error message: AttributeError: can't set attribute
-    # when attempting to anonymize tag in dicomanonymizer\simpledicomanonymizer.py:108
-    # See issue https://github.com/KitwareMedical/dicom-anonymizer/issues/63
-    replaced_failed = [
-        "reportsi.dcm",
-        "reportsi_with_empty_number_tags.dcm",
-        "test-SR.dcm",
-    ]
-
+    replaced_failed = []
     deleted_failed = []
     emptied_failed = []
     return dcmread_failed + replaced_failed + deleted_failed + emptied_failed
@@ -82,7 +73,7 @@ changed_tags = (
     + dicomfields.X_Z_U_STAR_TAGS
 )
 
-empty_values = (0, "", "00010101", "000000.00")
+empty_values = (0, "", "00010101", "000000.00", "ANONYMIZED")
 
 
 def is_elem_replaced(orig, anon) -> bool:
