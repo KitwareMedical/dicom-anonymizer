@@ -119,7 +119,11 @@ def replace_element(element):
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():                
+<<<<<<< HEAD
                 if isinstance(sub_element, pydicom.dataelem.RawDataElement):
+=======
+                if type(sub_element) == pydicom.dataelem.RawDataElement:
+>>>>>>> ee535a8 (Fix for #63, can't set attribute)
                     # RawDataElement is a NamedTuple, so cannot set its value attribute.
                     # Convert it to a DataElement, replace value, and set it back.
                     # Found in https://github.com/KitwareMedical/dicom-anonymizer/issues/63
