@@ -16,7 +16,7 @@ settings.reading_validation_mode = IGNORE
 warnings.filterwarnings("ignore")
 
 
-def get_all_failed():
+def get_all_failed():  # sourcery skip: inline-immediately-returned-variable
     # The following files are intended to fail dcmread
     # No point including them for anonymization testing
     dcmread_failed = [
@@ -27,10 +27,7 @@ def get_all_failed():
         "OT-PAL-8-face.dcm",
     ]
 
-    replaced_failed = []
-    deleted_failed = []
-    emptied_failed = []
-    return dcmread_failed + replaced_failed + deleted_failed + emptied_failed
+    return dcmread_failed
 
 
 @lru_cache(maxsize=None)
