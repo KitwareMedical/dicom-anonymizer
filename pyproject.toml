@@ -26,6 +26,9 @@ dependencies = [
 dev = [
   "pytest",
   "setuptools", # Needed to load pydicom's test files
+  "bs4",
+  "fire",
+  "requests"
 ]
 
 [project.scripts]
