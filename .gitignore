@@ -4,5 +4,6 @@ __pycache__
 .vscode
 build
 *.egg-info
+.python-version
 # Ignore Pipfile.lock, since different versions of python and OS produce different hashes
 Pipfile.lock
