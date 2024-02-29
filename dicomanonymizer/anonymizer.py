@@ -26,7 +26,7 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
     Read data from input path (folder or file) and launch the anonymization.
 
     :param input_path: Path to a folder or to a file. If set to a folder,
-    then cross all over subfiles and apply anonymization.
+    then cross all over sub-folders and apply anonymization.
     :param output_path: Path to a folder or to a file.
     :param anonymization_actions: List of actions that will be applied on tags.
     :param deletePrivateTags: Whether to delete private tags.
