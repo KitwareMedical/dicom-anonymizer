@@ -1,0 +1,50 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.2
+    "version": "0.2",
+    // language - current active spelling language
+    "language": "en",
+    // ignorepaths - list of glob patterns for files to ignore
+    "ignorePaths": [
+        "ext",
+        "*.json",
+        "Pipfile.lock",
+        "**/tests"
+    ],
+    // words - list of words to be always considered correct
+    "words": [
+        "anonymization",
+        "argparse",
+        "bdist",
+        "behaviour",
+        "dcmread",
+        "DICM",
+        "DICOM",
+        "dicomanonymizer",
+        "dicomfields",
+        "Edern",
+        "Fiducials",
+        "Fontaine",
+        "Haumont",
+        "Kitware",
+        "Laurenn",
+        "multival",
+        "pipenv",
+        "Pipfile",
+        "pydicom",
+        "pytest",
+        "Radiopharmaceutical",
+        "setuptools",
+        "simpledicomanonymizer",
+        "tqdm",
+        "venv",
+        "virtualenv",
+        "xgggg"
+    ]
+    // flagWords - list of words to be always considered incorrect
+    // This is useful for offensive words and common spelling errors.
+    // For example "hte" should be "the"
+    // "flagWords": [
+    //     "hte"
+    // ]
+}

@@ -1,0 +1,15 @@
+
+# pipenv is useful for developing local package in 
+# editable mode. See https://pypi.org/project/pipenv/
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+dicom-anonymizer = {file = ".", editable = true}
+
+[dev-packages]
+pytest = "*"
+setuptools = "*"
