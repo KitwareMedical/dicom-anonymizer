@@ -1,6 +1,11 @@
+import sys
+if sys.version_info >= (3,8):
+    import importlib.metadata as metadata
+else:
+    import importlib_metadata as metadata
+
 import argparse
 import ast
-import importlib.metadata
 import json
 import os
 import sys
@@ -98,7 +103,7 @@ def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict
 
 
 def main(defined_action_map = {}):
-    version_info = importlib.metadata.version("dicom_anonymizer")
+    version_info = metadata.version("dicom_anonymizer")
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
     parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
