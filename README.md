@@ -107,6 +107,11 @@ Example 2: We just want to change the study date from 20080701 to 20080000, then
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0008, 0x0020)' 'regexp' '0701$' '0000'
 ```
 
+Example 3: Change the tag value with an arbitrary value
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0010, 0x0010)' 'replace_with_value' 'new_value'
+```
+
 
 ## Custom rules with dictionary file
 
@@ -257,14 +262,14 @@ You can also add `extra_anonymization_rules` as above:
 | empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete | Completely remove the tag |
 | keep | Do nothing on the tag |
-| clean | Don't use it for now. This is not implemented |
 | replace_UID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
 | empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | deleteOrEmptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
-|regexp| These action is not a common action. It allows to use regexp to modify values|
+|regexp| Find a value in the tag using a regexp and replace it with an arbitrary value. See the examples in this file to learn how to use.|
+|replace_with_value| Replace the tag value with an arbitrary value. See the examples in this file to learn how to use.
 
 
 ** VR: Value Representation
