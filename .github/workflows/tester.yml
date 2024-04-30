@@ -5,12 +5,16 @@ on:
 jobs:
   launch-unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
+      - name: Testing with Python ${{ matrix.python-version }}
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11.3'
+          python-version: ${{ matrix.python-version }}
           cache: 'pip'
           cache-dependency-path: setup.py
       - run: python -m venv env
