@@ -7,7 +7,8 @@ from pydicom import dcmread
 from pydicom.config import settings, IGNORE
 from pydicom.data import get_testdata_files
 
-from dicomanonymizer import anonymize_dataset, dicomfields
+from dicomanonymizer.simpledicomanonymizer import anonymize_dataset
+from dicomanonymizer import dicomfields
 
 # Ignore warnings from pydicom validation
 settings.writing_validation_mode = IGNORE
@@ -40,7 +41,7 @@ def get_passing_files():
 @pytest.fixture(scope="module", params=get_passing_files())
 def orig_anon_dataset(request):
     orig_ds = dcmread(request.param)
-    orig_ds.filename = None # Non-None value causes warnings in copy(). Not needed for this testing
+    orig_ds.filename = None  # Non-None value causes warnings in copy(). Not needed for this testing
     anon_ds = orig_ds.copy()
     anonymize_dataset(anon_ds)
     return (orig_ds, anon_ds)

@@ -1,6 +1,6 @@
 import pydicom
 
-from dicomanonymizer import anonymize_dataset
+from dicomanonymizer.simpledicomanonymizer import anonymize_dataset
 
 
 def test_anonymization_without_dicom_file():

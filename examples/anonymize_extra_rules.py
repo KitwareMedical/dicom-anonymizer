@@ -1,5 +1,7 @@
 import argparse
-from dicomanonymizer import ALL_TAGS, anonymize, keep
+
+from dicomanonymizer.dicomfields import ALL_TAGS
+from dicomanonymizer import anonymize, keep
 
 
 def main():
@@ -25,7 +27,7 @@ def main():
     def set_date_to_year(dataset, tag):
         element = dataset.get(tag)
         if element is not None:
-            element.value = f"{element.value[:4]}0101" # YYYYMMDD format
+            element.value = f"{element.value[:4]}0101"  # YYYYMMDD format
 
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
@@ -33,7 +35,7 @@ def main():
     for i in ALL_TAGS:
         extra_anonymization_rules[i] = keep
 
-    extra_anonymization_rules[(0x0010, 0x0030)] = set_date_to_year # Patient's Birth Date
+    extra_anonymization_rules[(0x0010, 0x0030)] = set_date_to_year  # Patient's Birth Date
 
     # Launch the anonymization
     anonymize(
