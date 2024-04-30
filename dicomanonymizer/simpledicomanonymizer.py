@@ -166,7 +166,7 @@ def empty_element(element):
     elif element.VR in ('UL', 'FL', 'FD', 'SL', 'SS', 'US'):
         element.value = 0
     elif element.VR in ('DS', 'IS'):
-        element.value == '0'
+        element.value = '0'
     elif element.VR == 'UN':
         element.value = b''
     elif element.VR == 'SQ':
