@@ -107,6 +107,11 @@ Example 2: We just want to change the study date from 20080701 to 20080000, then
 python anonymizer.py InputFilePath OutputFilePath -t '(0x0008, 0x0020)' 'regexp' '0701$' '0000'
 ```
 
+Example 3: Change the tag value with an arbitrary value
+```python
+python anonymizer.py InputFilePath OutputFilePath -t '(0x0010, 0x0010)' 'replace_with_value' 'new_value'
+```
+
 
 ## Custom rules with dictionary file
 
@@ -146,11 +151,17 @@ by adding a suffix passed as a parameter.
 import argparse
 from dicomanonymizer import ALL_TAGS, anonymize, keep
 
+
 def main():
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
-    parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
-    parser.add_argument('--suffix', action='store', help='Suffix that will be added at the end of series description')
+    parser.add_argument(
+        "input",
+        help="Path to the input dicom file or input directory which contains dicom files",
+    )
+    parser.add_argument(
+        "output",
+        help="Path to the output dicom file or output directory which will contains dicom files",
+    )
     args = parser.parse_args()
 
     input_dicom_path = args.input
@@ -158,10 +169,13 @@ def main():
 
     extra_anonymization_rules = {}
 
-    def setup_series_description(dataset, tag):
+    # Per https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html
+    # it is all right to retain only the year part of the birth date for
+    # de-identification purposes.
+    def set_date_to_year(dataset, tag):
         element = dataset.get(tag)
         if element is not None:
-            element.value = f'{element.value}-{args.suffix}'
+            element.value = f"{element.value[:4]}0101" # YYYYMMDD format
 
     # ALL_TAGS variable is defined on file dicomfields.py
     # the 'keep' method is already defined into the dicom-anonymizer
@@ -169,13 +183,18 @@ def main():
     for i in ALL_TAGS:
         extra_anonymization_rules[i] = keep
 
-    if args.suffix:
-        extra_anonymization_rules[(0x0008, 0x103E)] = setup_series_description
+    extra_anonymization_rules[(0x0010, 0x0030)] = set_date_to_year # Patient's Birth Date
 
     # Launch the anonymization
-    anonymize(input_dicom_path, output_dicom_path, extra_anonymization_rules, delete_private_tags=False)
+    anonymize(
+        input_dicom_path,
+        output_dicom_path,
+        extra_anonymization_rules,
+        delete_private_tags=False,
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
 ```
 
@@ -243,14 +262,14 @@ You can also add `extra_anonymization_rules` as above:
 | empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete | Completely remove the tag |
 | keep | Do nothing on the tag |
-| clean | Don't use it for now. This is not implemented |
 | replace_UID | Replace all UID's number with a random one in order to keep consistent. Same UID will have the same replaced value |
 | empty_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty | Replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_replace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | deleteOrEmptyOrReplace | Replace with a non-zero length value that may be a dummy value and consistent with the VR** |
 | delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR** |
-|regexp| These action is not a common action. It allows to use regexp to modify values|
+|regexp| Find a value in the tag using a regexp and replace it with an arbitrary value. See the examples in this file to learn how to use.|
+|replace_with_value| Replace the tag value with an arbitrary value. See the examples in this file to learn how to use.
 
 
 ** VR: Value Representation

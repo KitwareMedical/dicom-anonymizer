@@ -1,12 +1,17 @@
+import sys
+if sys.version_info >= (3, 8):
+    import importlib.metadata as metadata
+else:
+    import importlib_metadata as metadata
+
 import argparse
 import ast
-import importlib.metadata
 import json
 import os
 import sys
 import tqdm
 
-from .simpledicomanonymizer import *
+from dicomanonymizer.simpledicomanonymizer import anonymize_dicom_file, ActionsMapNameFunctions
 
 
 def isDICOMType(filePath):
@@ -68,50 +73,85 @@ def anonymize(input_path: str, output_path: str, anonymization_actions: dict, de
     progress_bar.close()
 
 
-def generate_actions_dictionary(map_action_tag, defined_action_map = {}) -> dict:
+def parse_tag_actions_arguments(t_arguments: list, new_anonymization_actions: dict):
     """
-    Generate a new dictionary which maps actions function to tags
+    Parse the -t arguments and mutates the new_anonymization_actions dict
 
-    :param map_action_tag: link actions to tags
-    :param defined_action_map: link action name to action function
+    :param t_arguments: The -t arguments as given by argparse
+    :param new_anonymization_actions: The dict containing the base anonymization actions. This will be mutated.
     """
-    generated_map = {}
-    cpt = 0
-    for tag in map_action_tag:
-        test = [tag]
-        action = map_action_tag[tag]
+    for current_tag_parameters in t_arguments:
+        nb_parameters = len(current_tag_parameters)
+        if nb_parameters < 2:
+            raise ValueError("-t parameters should always have 2 values: tag and action")
 
-        # Define the associated function to the tag
-        if callable(action):
-            action_function = action
-        else:
-            action_function = defined_action_map[action] if action in defined_action_map else eval(action)
+        tag = current_tag_parameters[0]
+        action_name = current_tag_parameters[1]
 
-        # Generate the map
-        if cpt == 0:
-            generated_map = generate_actions(test, action_function)
-        else:
-            generated_map.update(generate_actions(test, action_function))
-        cpt += 1
+        try:
+            action_object = ActionsMapNameFunctions[action_name].value
+        except KeyError:
+            raise ValueError(f"Action {action_name} is not recognized.")
 
-    return generated_map
+        action_arguments = current_tag_parameters[2:]
+
+        if len(action_arguments) != action_object.number_of_expected_arguments:
+            raise ValueError(f"Wrong number of arguments for action {action_name}: found {len(action_arguments)}")
+
+        action = action_object.function if not len(action_arguments) else action_object.function(action_arguments)
+        tag_list = [ast.literal_eval(tag)]
+
+        new_anonymization_actions.update({tag: action for tag in tag_list})
 
 
-def main(defined_action_map = {}):
-    version_info = importlib.metadata.version("dicom_anonymizer")
+def parse_dictionary_argument(dictionary_argument, new_anonymization_actions):
+    """
+    Parse the --dictionary argument and mutates the new_anonymization_actions dict
+
+    :param dictionary_argument: The --dictionary argument as given by argparse
+    :param new_anonymization_actions: The dict containing the base anonymization actions. This will be mutated.
+    """
+    with open(dictionary_argument) as json_file:
+        data = json.load(json_file)
+        for tag, action_or_options in data.items():
+            if isinstance(action_or_options, dict):
+                try:
+                    action_name = action_or_options.pop('action')
+                except KeyError as e:
+                    raise ValueError(f"Missing field in tag {tag}: {e.args[0]}")
+                try:
+                    action_object = ActionsMapNameFunctions[action_name].value
+                except KeyError:
+                    raise ValueError(f"Action {action_name} is not recognized.")
+                if len(action_or_options) != action_object.number_of_expected_arguments:
+                    raise ValueError(
+                        f"Wrong number of arguments for action {action_name}: found {len(action_or_options)}")
+                action = action_object.function(action_or_options)
+            else:
+                try:
+                    action = ActionsMapNameFunctions[action_or_options].value.function
+                except KeyError:
+                    raise ValueError(f"Action {action_or_options} is not recognized.")
+
+            tag_list = [ast.literal_eval(tag)]
+            new_anonymization_actions.update({tag: action for tag in tag_list})
+
+
+def main():
+    version_info = metadata.version("dicom_anonymizer")
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('input', help='Path to the input dicom file or input directory which contains dicom files')
-    parser.add_argument('output', help='Path to the output dicom file or output directory which will contains dicom files')
-    parser.add_argument('-t', action='append', nargs='*', help='tags action : Defines a new action to apply on the tag.'\
-    '\'regexp\' action takes two arguments: '\
-        '1. regexp to find substring '\
-        '2. the string that will replace the previous found string')
-    parser.add_argument('-v',
-                        '--version',
-                        action='version',
-                        version=f'%(prog)s {version_info}')                        
-    parser.add_argument('--dictionary', action='store', help='File which contains a dictionary that can be added to the original one')
-    parser.add_argument('--keepPrivateTags', action='store_true', dest='keepPrivateTags', help='If used, then private tags won\'t be deleted')
+    parser.add_argument(
+        'output', help='Path to the output dicom file or output directory which will contains dicom files')
+    parser.add_argument(
+        '-t', action='append', nargs='*',
+        help='tags action : Defines a new action to apply on the tag.\'regexp\' action takes two arguments: '
+        '1. regexp to find substring 2. the string that will replace the previous found string')
+    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {version_info}')
+    parser.add_argument('--dictionary', action='store',
+                        help='File which contains a dictionary that can be added to the original one')
+    parser.add_argument('--keepPrivateTags', action='store_true', dest='keepPrivateTags',
+                        help='If used, then private tags won\'t be deleted')
     parser.set_defaults(keepPrivateTags=False)
     args = parser.parse_args()
 
@@ -120,62 +160,16 @@ def main(defined_action_map = {}):
 
     # Create a new actions' dictionary from parameters
     new_anonymization_actions = {}
-    cpt = 0
     if args.t:
-        number_of_new_tags_actions = len(args.t)
-        if number_of_new_tags_actions > 0:
-            for i in range(number_of_new_tags_actions):
-                current_tag_parameters = args.t[i]
-
-                nb_parameters = len(current_tag_parameters)
-                if nb_parameters == 0:
-                    continue
-
-                options = None
-                action_name = current_tag_parameters[1]
-
-                # Means that we are in regexp mode
-                if nb_parameters == 4:
-                    options = {
-                        "find": current_tag_parameters[2],
-                        "replace": current_tag_parameters[3]
-                    }
-
-                tags_list = [ast.literal_eval(current_tag_parameters[0])]
-
-                action = eval(action_name)
-                # When generate_actions is called and we have options, we don't want use regexp
-                # as an action but we want to call it to generate a new method
-                if options is not None:
-                    action = action_name
-
-                if cpt == 0:
-                    new_anonymization_actions = generate_actions(tags_list, action, options)
-                else:
-                    new_anonymization_actions.update(generate_actions(tags_list, action, options))
-                cpt += 1
+        parse_tag_actions_arguments(args.t, new_anonymization_actions)
 
     # Read an existing dictionary
     if args.dictionary:
-        with open(args.dictionary) as json_file:
-            data = json.load(json_file)
-            for key, value in data.items():
-                action_name = value
-                options = None
-                if type(value) is dict:
-                    action_name = value['action']
-                    options = {
-                        "find": value['find'],
-                        "replace" : value['replace']
-                    }
-
-                l = [ast.literal_eval(key)]
-                action = defined_action_map[action_name] if action_name in defined_action_map else eval(action_name)
-                if cpt == 0:
-                    new_anonymization_actions = generate_actions(l, action, options)
-                else:
-                    new_anonymization_actions.update(generate_actions(l, action, options))
-                cpt += 1
+        parse_dictionary_argument(args.dictionary, new_anonymization_actions)
 
     # Launch the anonymization
     anonymize(input_path, output_path, new_anonymization_actions, not args.keepPrivateTags)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,34 +1,72 @@
-import re
-from typing import List
-
 import pydicom
+import re
 
-from .dicomfields import *
-from .format_tag import tag_to_hex_strings
+from enum import Enum
+from typing import List, Union
+from dataclasses import dataclass
+
+from dicomanonymizer.dicomfields import (
+    D_TAGS, Z_TAGS, X_TAGS, U_TAGS, Z_D_TAGS, X_Z_TAGS, X_D_TAGS, X_Z_D_TAGS, X_Z_U_STAR_TAGS)
+from dicomanonymizer.format_tag import tag_to_hex_strings
+
 
 dictionary = {}
 
 
 # Regexp function
 
-def regexp(options: dict):
+def regexp(options: Union[list, dict]):
     """
     Apply a regexp method to the dataset
 
     :param options: contains two values:
-        - find: which string should be find
-        - replace: string that will replace the find string
+        - find: the regexp that will be used to find the string to replace
+        - replace: string that will replace the regexp matches
+    If options is a list, find is expected to be the first value.
     """
 
     def apply_regexp(dataset, tag):
         """
         Apply a regexp to the dataset
         """
+        if isinstance(options, dict):
+            try:
+                find = options['find']
+                replace = options['replace']
+            except KeyError as e:
+                raise ValueError(f"Missing field in tag dictionary {tag}: {e.args[0]}")
+        else:
+            find, replace = options
+
         element = dataset.get(tag)
         if element is not None:
-            element.value = re.sub(options['find'], options['replace'], str(element.value))
+            element.value = re.sub(find, replace, str(element.value))
 
     return apply_regexp
+
+
+def replace_with_value(options: Union[list, dict]):
+    """
+    Replace the given tag with a predefined value.
+
+    :param options: contains one value:
+        - value: the string used to replace the tag value
+    If options is a list, value is expected to be the first value.
+    """
+    def apply_replace_with_value(dataset, tag):
+        if isinstance(options, dict):
+            try:
+                value = options['value']
+            except KeyError as e:
+                raise ValueError(f"Missing field in tag dictionary {tag}: {e.args[0]}")
+        else:
+            value = options[0]
+
+        element = dataset.get(tag)
+        if element is not None:
+            element.value = value
+
+    return apply_replace_with_value
 
 
 # Default anonymization functions
@@ -42,6 +80,7 @@ def get_UID(old_uid: str) -> str:
         dictionary[old_uid] = generate_uid(None)
     return dictionary.get(old_uid)
 
+
 def replace_element_UID(element):
     """
     Replace UID(s) with random UID(s)
@@ -49,12 +88,13 @@ def replace_element_UID(element):
     apply the same replaced value if we have an other UID with the same value
     """
     from pydicom.multival import MultiValue
-    if type(element.value) == MultiValue:
-        # Example of multi-value UID situation: IrradiationEventUID, (0008,3010) 
+    if isinstance(element.value, MultiValue):
+        # Example of multi-value UID situation: IrradiationEventUID, (0008,3010)
         for k, v in enumerate(element.value):
             element.value[k] = get_UID(v)
     else:
         element.value = get_UID(element.value)
+
 
 def replace_date_time_element(element):
     """
@@ -69,6 +109,7 @@ def replace_date_time_element(element):
     elif element.VR == 'TM':
         replace_element_time(element)
 
+
 def replace_element_date(element):
     """
     Replace date element's value with '00010101'
@@ -81,6 +122,7 @@ def replace_element_date_time(element):
     Replace date time element's value with '00010101010101.000000+0000'
     """
     element.value = '00010101010101.000000+0000'
+
 
 def replace_element_time(element):
     """
@@ -105,7 +147,7 @@ def replace_element(element):
     See https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
     if element.VR in ('LO', 'LT', 'SH', 'PN', 'CS', 'ST', 'UT'):
-        element.value = 'ANONYMIZED' # CS VR accepts only uppercase characters
+        element.value = 'ANONYMIZED'  # CS VR accepts only uppercase characters
     elif element.VR == 'UI':
         replace_element_UID(element)
     elif element.VR in ('DS', 'IS'):
@@ -118,7 +160,7 @@ def replace_element(element):
         element.value = b'Anonymized'
     elif element.VR == 'SQ':
         for sub_dataset in element.value:
-            for sub_element in sub_dataset.elements():                
+            for sub_element in sub_dataset.elements():
                 if isinstance(sub_element, pydicom.dataelem.RawDataElement):
                     # RawDataElement is a NamedTuple, so cannot set its value attribute.
                     # Convert it to a DataElement, replace value, and set it back.
@@ -214,15 +256,6 @@ def keep(dataset, tag):
     pass
 
 
-def clean(dataset, tag):
-    """
-    C - clean, that is replace with values of similar meaning known not to contain identifying
-    information and consistent with the VR
-    """
-    if dataset.get(tag) is not None:
-        raise NotImplementedError('Tag not anonymized. Not yet implemented.')
-
-
 def replace_UID(dataset, tag):
     """
     U - replace with a non-zero length UID that is internally consistent within a set of Instances
@@ -271,36 +304,25 @@ def delete_or_empty_or_replace_UID(dataset, tag):
 
 # Generation functions
 
-actions_map_name_functions = {
-    "replace": replace,
-    "empty": empty,
-    "delete": delete,
-    "replace_UID": replace_UID,
-    "empty_or_replace": empty_or_replace,
-    "delete_or_empty": delete_or_empty,
-    "delete_or_replace": delete_or_replace,
-    "delete_or_empty_or_replace": delete_or_empty_or_replace,
-    "delete_or_empty_or_replace_UID": delete_or_empty_or_replace_UID,
-    "keep": keep,
-    "regexp": regexp
-}
+@dataclass
+class Action:
+    function: callable
+    number_of_expected_arguments: int
 
 
-def generate_actions(tag_list: list, action, options: dict = None) -> dict:
-    """
-    Generate a dictionary using list values as tag and assign the same value to all
-
-    :param tag_list: list of tags which will have the same associated actions
-    :param action: define the action that will be use. It can be a callable custom function or a name of a pre-defined
-    action from simpledicomanonymizer.
-    :param options: Define options tht will be affected to the action (like regexp)
-    """
-    final_action = action
-    if not callable(action):
-        final_action = actions_map_name_functions[action] if action in actions_map_name_functions else keep
-    if options is not None:
-        final_action = final_action(options)
-    return {tag: final_action for tag in tag_list}
+class ActionsMapNameFunctions(Enum):
+    replace = Action(replace, 0)
+    empty = Action(empty, 0)
+    delete = Action(delete, 0)
+    replace_UID = Action(replace_UID, 0)
+    empty_or_replace = Action(empty_or_replace, 0)
+    delete_or_empty = Action(delete_or_empty, 0)
+    delete_or_replace = Action(delete_or_replace, 0)
+    delete_or_empty_or_replace = Action(delete_or_empty_or_replace, 0)
+    delete_or_empty_or_replace_UID = Action(delete_or_empty_or_replace_UID, 0)
+    keep = Action(keep, 0)
+    replace_with_value = Action(replace_with_value, 1)
+    regexp = Action(regexp, 2)
 
 
 def initialize_actions() -> dict:
@@ -309,15 +331,15 @@ def initialize_actions() -> dict:
 
     :return Dict object which map actions to tags
     """
-    anonymization_actions = generate_actions(D_TAGS, replace)
-    anonymization_actions.update(generate_actions(Z_TAGS, empty))
-    anonymization_actions.update(generate_actions(X_TAGS, delete))
-    anonymization_actions.update(generate_actions(U_TAGS, replace_UID))
-    anonymization_actions.update(generate_actions(Z_D_TAGS, empty_or_replace))
-    anonymization_actions.update(generate_actions(X_Z_TAGS, delete_or_empty))
-    anonymization_actions.update(generate_actions(X_D_TAGS, delete_or_replace))
-    anonymization_actions.update(generate_actions(X_Z_D_TAGS, delete_or_empty_or_replace))
-    anonymization_actions.update(generate_actions(X_Z_U_STAR_TAGS, delete_or_empty_or_replace_UID))
+    anonymization_actions = {tag: replace for tag in D_TAGS}
+    anonymization_actions.update({tag: empty for tag in Z_TAGS})
+    anonymization_actions.update({tag: delete for tag in X_TAGS})
+    anonymization_actions.update({tag: replace_UID for tag in U_TAGS})
+    anonymization_actions.update({tag: empty_or_replace for tag in Z_D_TAGS})
+    anonymization_actions.update({tag: delete_or_empty for tag in X_Z_TAGS})
+    anonymization_actions.update({tag: delete_or_replace for tag in X_D_TAGS})
+    anonymization_actions.update({tag: delete_or_empty_or_replace for tag in X_Z_D_TAGS})
+    anonymization_actions.update({tag: delete_or_empty_or_replace_UID for tag in X_Z_U_STAR_TAGS})
     return anonymization_actions
 
 
@@ -395,10 +417,10 @@ def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> L
     :return Array of object
     """
     private_tags = []
-    for tag, action in anonymization_actions.items():
+    for tag in anonymization_actions.keys():
         try:
             element = dataset.get(tag)
-        except:
+        except KeyError:
             print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
         if element and element.tag.is_private:
@@ -448,7 +470,7 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
                 action(dataset, tag)
             try:
                 element = dataset.get(tag)
-            except:
+            except KeyError:
                 print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
             # Get private tag to restore it later
