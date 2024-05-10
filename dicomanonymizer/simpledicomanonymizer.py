@@ -449,7 +449,12 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
 
         def range_callback(dataset, data_element):
             if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
-                action(dataset, (data_element.tag.group, data_element.tag.element))
+                action(dataset, data_element.tag)
+
+                # Get private tag to restore it later if it remains after action.
+                element = dataset.get(data_element.tag)
+                if element and element.tag.is_private:
+                    private_tags.append(get_private_tag(dataset, data_element.tag))
 
         element = None
 
@@ -468,12 +473,9 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
                 action(dataset.file_meta, tag)
             else:
                 action(dataset, tag)
-            try:
-                element = dataset.get(tag)
-            except KeyError:
-                print("Cannot get element from tag: ", tag_to_hex_strings(tag))
 
-            # Get private tag to restore it later
+            # Get private tag to restore it later if it remains after action.
+            element = dataset.get(tag)
             if element and element.tag.is_private:
                 private_tags.append(get_private_tag(dataset, tag))
 
