@@ -1,7 +1,11 @@
 import pydicom
 
 from dicomanonymizer import anonymize_dataset
-from dicomanonymizer.simpledicomanonymizer import empty
+from dicomanonymizer.simpledicomanonymizer import (
+    empty,
+    initialize_actions,
+    initialize_actions_2024b,
+)
 
 
 def test_anonymization_without_dicom_file():
@@ -74,3 +78,44 @@ def test_anonymization_of_ranged_tags_without_dicom_file():
     # Check that the dataset has been anonymized
     assert (0x5011, 0x0110) not in anon_ds
     assert (0x5012, 0x0112) not in anon_ds
+
+
+def test_switching_dicom_versions():
+    """To confirm the different behavior of annonymization beteen dicom versions of 2013 and 2024b.
+
+    In 2013, anonymization method of Patient ID is marked as "Z" (empty value) while it becomes Z/D
+    in 2024b.
+
+    Note, VR of Patient ID remains LO in 2013 and 2024b ("current" is 2024b as of 2024.05.14).
+    https://dicom.nema.org/dicom/2013/output/chtml/part06/chapter_6.html#table_6-1
+    https://dicom.nema.org/dicom/current/output/chtml/part06/chapter_6.html#table_6-1
+    """
+    fields = [
+        {  # Replaced by Anonymized
+            "id": (0x0010, 0x0020),
+            "type": "LO",
+            "value": "Test Patient ID",
+        },
+    ]
+
+    # Create a readable dataset for pydicom
+    data = pydicom.Dataset()
+    data_2013 = pydicom.Dataset()
+    data_2024b = pydicom.Dataset()
+
+    for field in fields:  # sourcery skip: no-loop-in-tests
+        data.add_new(field["id"], field["type"], field["value"])
+        data_2013.add_new(field["id"], field["type"], field["value"])
+        data_2024b.add_new(field["id"], field["type"], field["value"])
+
+    anonymize_dataset(data, base_rules_gen=initialize_actions)
+    anonymize_dataset(
+        data_2013, base_rules_gen=lambda: initialize_actions("dicomfields_2013")
+    )
+    anonymize_dataset(data_2024b, base_rules_gen=initialize_actions_2024b)
+
+    assert data[(0x0010, 0x0020)].value == ""  # default behavior which is DICOM 2013.
+    assert data_2013[(0x0010, 0x0020)].value == ""  # same as the default.
+    assert (
+        data_2024b[(0x0010, 0x0020)].value == "ANONYMIZED"
+    )  # 2024b differs from the default

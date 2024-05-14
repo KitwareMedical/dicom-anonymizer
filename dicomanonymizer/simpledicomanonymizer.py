@@ -2,23 +2,13 @@ import pydicom
 import re
 
 from enum import Enum
-from typing import List, Union
+from typing import Callable, List, Union
 from dataclasses import dataclass
 
-from dicomanonymizer.dicomfields import (
-    D_TAGS,
-    Z_TAGS,
-    X_TAGS,
-    U_TAGS,
-    Z_D_TAGS,
-    X_Z_TAGS,
-    X_D_TAGS,
-    X_Z_D_TAGS,
-    X_Z_U_STAR_TAGS,
-)
+from dicomanonymizer.dicomfields_selector import dicom_anonymization_database_selector
 from dicomanonymizer.format_tag import tag_to_hex_strings
 
-
+# keeps the mapping from old UID to new UID
 dictionary = {}
 
 
@@ -344,26 +334,39 @@ class ActionsMapNameFunctions(Enum):
     regexp = Action(regexp, 2)
 
 
-def initialize_actions() -> dict:
+def initialize_actions(dicom_version: str = "dicomfields_2013") -> dict:
     """
     Initialize anonymization actions with DICOM standard values
 
+    :param dicom_version: DICOM version to use
     :return Dict object which map actions to tags
     """
-    anonymization_actions = {tag: replace for tag in D_TAGS}
-    anonymization_actions.update({tag: empty for tag in Z_TAGS})
-    anonymization_actions.update({tag: delete for tag in X_TAGS})
-    anonymization_actions.update({tag: replace_UID for tag in U_TAGS})
-    anonymization_actions.update({tag: empty_or_replace for tag in Z_D_TAGS})
-    anonymization_actions.update({tag: delete_or_empty for tag in X_Z_TAGS})
-    anonymization_actions.update({tag: delete_or_replace for tag in X_D_TAGS})
+    tags = dicom_anonymization_database_selector(dicom_version)
+
+    anonymization_actions = {tag: replace for tag in tags["D_TAGS"]}
+    anonymization_actions.update({tag: empty for tag in tags["Z_TAGS"]})
+    anonymization_actions.update({tag: delete for tag in tags["X_TAGS"]})
+    anonymization_actions.update({tag: replace_UID for tag in tags["U_TAGS"]})
+    anonymization_actions.update({tag: empty_or_replace for tag in tags["Z_D_TAGS"]})
+    anonymization_actions.update({tag: delete_or_empty for tag in tags["X_Z_TAGS"]})
+    anonymization_actions.update({tag: delete_or_replace for tag in tags["X_D_TAGS"]})
     anonymization_actions.update(
-        {tag: delete_or_empty_or_replace for tag in X_Z_D_TAGS}
+        {tag: delete_or_empty_or_replace for tag in tags["X_Z_D_TAGS"]}
     )
     anonymization_actions.update(
-        {tag: delete_or_empty_or_replace_UID for tag in X_Z_U_STAR_TAGS}
+        {tag: delete_or_empty_or_replace_UID for tag in tags["X_Z_U_STAR_TAGS"]}
     )
     return anonymization_actions
+
+
+def initialize_actions_2024b() -> dict:
+    """
+    Initialize anonymization actions with DICOM standard values of 2024b.
+    If you want to use 2024b version of anonymization, call anonymize_dataset with base_rules_gen=initialize_actions_2024b.
+
+    :return Dict object which map actions to tags
+    """
+    return initialize_actions("dicomfields_2024b")
 
 
 def anonymize_dicom_file(
@@ -448,6 +451,7 @@ def get_private_tags(
 
 def anonymize_dataset(
     dataset: pydicom.Dataset,
+    base_rules_gen: Callable = initialize_actions,
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
 ) -> None:
@@ -455,10 +459,11 @@ def anonymize_dataset(
     Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
 
     :param dataset: Dataset to be anonymize
+    :param base_rules_gen: Function to generate the base rules
     :param extra_anonymization_rules: Rules to be applied on the dataset
     :param delete_private_tags: Define if private tags should be delete or not
     """
-    current_anonymization_actions = initialize_actions()
+    current_anonymization_actions = base_rules_gen()
 
     if extra_anonymization_rules is not None:
         current_anonymization_actions.update(extra_anonymization_rules)

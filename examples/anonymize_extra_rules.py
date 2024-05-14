@@ -1,6 +1,6 @@
 import argparse
 
-from dicomanonymizer.dicomfields import ALL_TAGS
+from dicomanonymizer.dicom_anonymization_databases.dicomfields_2013 import ALL_TAGS
 from dicomanonymizer import anonymize, keep
 
 
