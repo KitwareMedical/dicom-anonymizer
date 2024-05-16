@@ -14,7 +14,7 @@ def hex_to_string(x):
     left = x[:2]
     right = x[2:]
     num_zeroes = 4 - len(right)
-    return left + ('0' * num_zeroes) + right
+    return left + ("0" * num_zeroes) + right
 
 
 def tag_to_hex_strings(tag):

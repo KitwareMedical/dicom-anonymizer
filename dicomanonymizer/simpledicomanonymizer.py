@@ -6,7 +6,16 @@ from typing import List, Union
 from dataclasses import dataclass
 
 from dicomanonymizer.dicomfields import (
-    D_TAGS, Z_TAGS, X_TAGS, U_TAGS, Z_D_TAGS, X_Z_TAGS, X_D_TAGS, X_Z_D_TAGS, X_Z_U_STAR_TAGS)
+    D_TAGS,
+    Z_TAGS,
+    X_TAGS,
+    U_TAGS,
+    Z_D_TAGS,
+    X_Z_TAGS,
+    X_D_TAGS,
+    X_Z_D_TAGS,
+    X_Z_U_STAR_TAGS,
+)
 from dicomanonymizer.format_tag import tag_to_hex_strings
 
 
@@ -14,6 +23,7 @@ dictionary = {}
 
 
 # Regexp function
+
 
 def regexp(options: Union[list, dict]):
     """
@@ -31,8 +41,8 @@ def regexp(options: Union[list, dict]):
         """
         if isinstance(options, dict):
             try:
-                find = options['find']
-                replace = options['replace']
+                find = options["find"]
+                replace = options["replace"]
             except KeyError as e:
                 raise ValueError(f"Missing field in tag dictionary {tag}: {e.args[0]}")
         else:
@@ -53,10 +63,11 @@ def replace_with_value(options: Union[list, dict]):
         - value: the string used to replace the tag value
     If options is a list, value is expected to be the first value.
     """
+
     def apply_replace_with_value(dataset, tag):
         if isinstance(options, dict):
             try:
-                value = options['value']
+                value = options["value"]
             except KeyError as e:
                 raise ValueError(f"Missing field in tag dictionary {tag}: {e.args[0]}")
         else:
@@ -71,11 +82,13 @@ def replace_with_value(options: Union[list, dict]):
 
 # Default anonymization functions
 
+
 def get_UID(old_uid: str) -> str:
     """
     Lookup new UID in cached dictionary or create new one if none found
     """
     from pydicom.uid import generate_uid
+
     if old_uid not in dictionary:
         dictionary[old_uid] = generate_uid(None)
     return dictionary.get(old_uid)
@@ -88,6 +101,7 @@ def replace_element_UID(element):
     apply the same replaced value if we have an other UID with the same value
     """
     from pydicom.multival import MultiValue
+
     if isinstance(element.value, MultiValue):
         # Example of multi-value UID situation: IrradiationEventUID, (0008,3010)
         for k, v in enumerate(element.value):
@@ -102,11 +116,11 @@ def replace_date_time_element(element):
 
     Date and time elements are all handled in the same way, whether they are emptied or removed.
     """
-    if element.VR == 'DA':
+    if element.VR == "DA":
         replace_element_date(element)
-    elif element.VR == 'DT':
+    elif element.VR == "DT":
         replace_element_date_time(element)
-    elif element.VR == 'TM':
+    elif element.VR == "TM":
         replace_element_time(element)
 
 
@@ -114,21 +128,21 @@ def replace_element_date(element):
     """
     Replace date element's value with '00010101'
     """
-    element.value = '00010101'
+    element.value = "00010101"
 
 
 def replace_element_date_time(element):
     """
     Replace date time element's value with '00010101010101.000000+0000'
     """
-    element.value = '00010101010101.000000+0000'
+    element.value = "00010101010101.000000+0000"
 
 
 def replace_element_time(element):
     """
     Replace time element's value with '000000.00'
     """
-    element.value = '000000.00'
+    element.value = "000000.00"
 
 
 def replace_element(element):
@@ -146,19 +160,19 @@ def replace_element(element):
 
     See https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
-    if element.VR in ('LO', 'LT', 'SH', 'PN', 'CS', 'ST', 'UT'):
-        element.value = 'ANONYMIZED'  # CS VR accepts only uppercase characters
-    elif element.VR == 'UI':
+    if element.VR in ("LO", "LT", "SH", "PN", "CS", "ST", "UT"):
+        element.value = "ANONYMIZED"  # CS VR accepts only uppercase characters
+    elif element.VR == "UI":
         replace_element_UID(element)
-    elif element.VR in ('DS', 'IS'):
-        element.value = '0'
-    elif element.VR in ('FD', 'FL', 'SS', 'US', 'SL', 'UL'):
+    elif element.VR in ("DS", "IS"):
+        element.value = "0"
+    elif element.VR in ("FD", "FL", "SS", "US", "SL", "UL"):
         element.value = 0
-    elif element.VR in ('DT', 'DA', 'TM'):
+    elif element.VR in ("DT", "DA", "TM"):
         replace_date_time_element(element)
-    elif element.VR == 'UN':
-        element.value = b'Anonymized'
-    elif element.VR == 'SQ':
+    elif element.VR == "UN":
+        element.value = b"Anonymized"
+    elif element.VR == "SQ":
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
                 if isinstance(sub_element, pydicom.dataelem.RawDataElement):
@@ -171,7 +185,9 @@ def replace_element(element):
                 else:
                     replace_element(sub_element)
     else:
-        raise NotImplementedError('Not anonymized. VR {} not yet implemented.'.format(element.VR))
+        raise NotImplementedError(
+            "Not anonymized. VR {} not yet implemented.".format(element.VR)
+        )
 
 
 def replace(dataset, tag):
@@ -201,22 +217,24 @@ def empty_element(element):
 
     See: https://laurelbridge.com/pdf/Dicom-Anonymization-Conformance-Statement.pdf
     """
-    if element.VR in ('SH', 'PN', 'UI', 'LO', 'LT', 'CS', 'AS', 'ST', 'UT'):
-        element.value = ''
-    elif element.VR in ('DT', 'DA', 'TM'):
+    if element.VR in ("SH", "PN", "UI", "LO", "LT", "CS", "AS", "ST", "UT"):
+        element.value = ""
+    elif element.VR in ("DT", "DA", "TM"):
         replace_date_time_element(element)
-    elif element.VR in ('UL', 'FL', 'FD', 'SL', 'SS', 'US'):
+    elif element.VR in ("UL", "FL", "FD", "SL", "SS", "US"):
         element.value = 0
-    elif element.VR in ('DS', 'IS'):
-        element.value = '0'
-    elif element.VR == 'UN':
-        element.value = b''
-    elif element.VR == 'SQ':
+    elif element.VR in ("DS", "IS"):
+        element.value = "0"
+    elif element.VR == "UN":
+        element.value = b""
+    elif element.VR == "SQ":
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
                 empty_element(sub_element)
     else:
-        raise NotImplementedError('Not anonymized. VR {} not yet implemented.'.format(element.VR))
+        raise NotImplementedError(
+            "Not anonymized. VR {} not yet implemented.".format(element.VR)
+        )
 
 
 def empty(dataset, tag):
@@ -234,9 +252,9 @@ def delete_element(dataset, element):
     Delete the element from the dataset.
     If VR's element is a date, then it will be replaced by 00010101
     """
-    if element.VR == 'DA':
+    if element.VR == "DA":
         replace_element_date(element)
-    elif element.VR == 'SQ' and element.value is type(pydicom.Sequence):
+    elif element.VR == "SQ" and element.value is type(pydicom.Sequence):
         for sub_dataset in element.value:
             for sub_element in sub_dataset.elements():
                 delete_element(sub_dataset, sub_element)
@@ -296,13 +314,14 @@ def delete_or_empty_or_replace_UID(dataset, tag):
     """
     element = dataset.get(tag)
     if element is not None:
-        if element.VR == 'UI':
+        if element.VR == "UI":
             replace_element_UID(element)
         else:
             empty_element(element)
 
 
 # Generation functions
+
 
 @dataclass
 class Action:
@@ -338,13 +357,21 @@ def initialize_actions() -> dict:
     anonymization_actions.update({tag: empty_or_replace for tag in Z_D_TAGS})
     anonymization_actions.update({tag: delete_or_empty for tag in X_Z_TAGS})
     anonymization_actions.update({tag: delete_or_replace for tag in X_D_TAGS})
-    anonymization_actions.update({tag: delete_or_empty_or_replace for tag in X_Z_D_TAGS})
-    anonymization_actions.update({tag: delete_or_empty_or_replace_UID for tag in X_Z_U_STAR_TAGS})
+    anonymization_actions.update(
+        {tag: delete_or_empty_or_replace for tag in X_Z_D_TAGS}
+    )
+    anonymization_actions.update(
+        {tag: delete_or_empty_or_replace_UID for tag in X_Z_U_STAR_TAGS}
+    )
     return anonymization_actions
 
 
-def anonymize_dicom_file(in_file: str, out_file: str, extra_anonymization_rules: dict = None,
-                         delete_private_tags: bool = True) -> None:
+def anonymize_dicom_file(
+    in_file: str,
+    out_file: str,
+    extra_anonymization_rules: dict = None,
+    delete_private_tags: bool = True,
+) -> None:
     """
     Anonymize a DICOM file by modifying personal tags
 
@@ -377,10 +404,7 @@ def get_private_tag(dataset, tag):
     tag_group = element.tag.group
     # The element is a private creator
     if element_value in dataset.private_creators(tag_group):
-        creator = {
-            "tagGroup": tag_group,
-            "creatorName": element.value
-        }
+        creator = {"tagGroup": tag_group, "creatorName": element.value}
         private_element = None
     # The element is a private element with an associated private creator
     else:
@@ -389,26 +413,19 @@ def get_private_tag(dataset, tag):
         create_tag_element = element.tag.element >> 8
         create_tag = pydicom.tag.Tag(tag_group, create_tag_element)
         create_dataset = dataset.get(create_tag)
-        creator = {
-            "tagGroup": tag_group,
-            "creatorName": create_dataset.value
-        }
+        creator = {"tagGroup": tag_group, "creatorName": create_dataset.value}
         # Define which offset should be applied to the creator to find
         # this element
         # 0x0010 << 8 will give 0x1000
         offset_from_creator = element.tag.element - (create_tag_element << 8)
-        private_element = {
-            "element": element,
-            "offset": offset_from_creator
-        }
+        private_element = {"element": element, "offset": offset_from_creator}
 
-    return {
-        "creator": creator,
-        "element": private_element
-    }
+    return {"creator": creator, "element": private_element}
 
 
-def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> List[dict]:
+def get_private_tags(
+    anonymization_actions: dict, dataset: pydicom.Dataset
+) -> List[dict]:
     """
     Extract private tag as a list of object with creator and element
 
@@ -429,8 +446,11 @@ def get_private_tags(anonymization_actions: dict, dataset: pydicom.Dataset) -> L
     return private_tags
 
 
-def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict = None,
-                      delete_private_tags: bool = True) -> None:
+def anonymize_dataset(
+    dataset: pydicom.Dataset,
+    extra_anonymization_rules: dict = None,
+    delete_private_tags: bool = True,
+) -> None:
     """
     Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
 
@@ -448,7 +468,10 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
     for tag, action in current_anonymization_actions.items():
 
         def range_callback(dataset, data_element):
-            if data_element.tag.group & tag[2] == tag[0] and data_element.tag.element & tag[3] == tag[1]:
+            if (
+                data_element.tag.group & tag[2] == tag[0]
+                and data_element.tag.element & tag[3] == tag[1]
+            ):
                 action(dataset, (data_element.tag.group, data_element.tag.element))
 
         element = None
@@ -462,7 +485,7 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
             # The meta header information is located in the `file_meta` dataset
             # For tags with tag group `0x0002` we thus apply the action to the `file_meta` dataset
             if tag[0] == 0x0002:
-                if not hasattr(dataset, 'file_meta'):
+                if not hasattr(dataset, "file_meta"):
                     continue
                 # Apply rule to meta information header
                 action(dataset.file_meta, tag)
@@ -485,6 +508,10 @@ def anonymize_dataset(dataset: pydicom.Dataset, extra_anonymization_rules: dict 
         for privateTag in private_tags:
             creator = privateTag["creator"]
             element = privateTag["element"]
-            block = dataset.private_block(creator["tagGroup"], creator["creatorName"], create=True)
+            block = dataset.private_block(
+                creator["tagGroup"], creator["creatorName"], create=True
+            )
             if element is not None:
-                block.add_new(element["offset"], element["element"].VR, element["element"].value)
+                block.add_new(
+                    element["offset"], element["element"].VR, element["element"].value
+                )

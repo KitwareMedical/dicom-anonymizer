@@ -35,7 +35,9 @@ def main():
     for i in ALL_TAGS:
         extra_anonymization_rules[i] = keep
 
-    extra_anonymization_rules[(0x0010, 0x0030)] = set_date_to_year  # Patient's Birth Date
+    extra_anonymization_rules[(0x0010, 0x0030)] = (
+        set_date_to_year  # Patient's Birth Date
+    )
 
     # Launch the anonymization
     anonymize(
