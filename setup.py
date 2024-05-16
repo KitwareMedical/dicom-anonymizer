@@ -50,7 +50,9 @@ setup(
             "pytest",
             "bs4",
             "fire",
-            "requests"
+            "requests",
+            "pre-commit",
+            "ruff"
         ]
     }
 )
