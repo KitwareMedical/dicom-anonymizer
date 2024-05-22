@@ -25,14 +25,44 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 
 Installation can be done via pip `pip install dicom-anonymizer` or conda `conda install -c conda-forge dicom-anonymizer`.
 
-# How to test it?
-- One time set up:
-  - virtual environment for this package and activate it. For
-  example set up using `virtualenv venv` and activate using
-  `venv\Scripts\activate.bat` (on Windows)
-  - Install editable version and development requirements using
-  `pip install -e .[dev]`
-- Run unit test using `pytest`
+
+# Local Development Setup
+
+To get started with local development, follow these steps:
+
+1. Create a Virtual Environment:
+   - On Windows:
+     ```sh
+     virtualenv env
+     .\env\Scripts\activate.bat
+     ```
+   - On MacOS/Linux:
+     ```sh
+     python -m venv env
+     source env/bin/activate
+     ```
+
+2. Install Dependencies:
+   - Install an editable version of the package and the development requirements:
+     ```sh
+     pip install -e .[dev]
+     ```
+
+3. Set Up Pre-Commit Hooks:
+   - Install the pre-commit hooks to ensure code quality:
+     ```sh
+     pre-commit install
+     ```
+
+
+## How to test it?
+
+To run the unit tests, use the following command:
+
+```sh
+pytest
+```
+
 
 # How to build it?
 These instructions rely on wheel build-package format. Install it if you have not done it already using:
