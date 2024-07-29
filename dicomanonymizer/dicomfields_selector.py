@@ -15,7 +15,7 @@ ANONYMIZATION_CATEGORIES = [
 
 
 def dicom_anonymization_database_selector(
-    dicom_version: str = "dicomfields_2013",
+    dicom_version: str = "dicomfields_2023",
 ) -> dict:
     try:
         dicom_anonymization_database = importlib.import_module(

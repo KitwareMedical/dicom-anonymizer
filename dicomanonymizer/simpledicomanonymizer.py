@@ -334,7 +334,7 @@ class ActionsMapNameFunctions(Enum):
     regexp = Action(regexp, 2)
 
 
-def initialize_actions(dicom_version: str = "dicomfields_2013") -> dict:
+def initialize_actions(dicom_version: str = "dicomfields_2023") -> dict:
     """
     Initialize anonymization actions with DICOM standard values
 
