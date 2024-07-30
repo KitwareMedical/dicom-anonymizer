@@ -374,6 +374,7 @@ def anonymize_dicom_file(
     out_file: str,
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
+    base_rules_gen: Callable = initialize_actions,
 ) -> None:
     """
     Anonymize a DICOM file by modifying personal tags
@@ -387,7 +388,9 @@ def anonymize_dicom_file(
     """
     dataset = pydicom.dcmread(in_file)
 
-    anonymize_dataset(dataset, extra_anonymization_rules, delete_private_tags)
+    anonymize_dataset(
+        dataset, extra_anonymization_rules, delete_private_tags, base_rules_gen
+    )
 
     # Store modified image
     dataset.save_as(out_file)
@@ -451,9 +454,9 @@ def get_private_tags(
 
 def anonymize_dataset(
     dataset: pydicom.Dataset,
-    base_rules_gen: Callable = initialize_actions,
     extra_anonymization_rules: dict = None,
     delete_private_tags: bool = True,
+    base_rules_gen: Callable = initialize_actions,
 ) -> None:
     """
     Anonymize a pydicom Dataset by using anonymization rules which links an action to a tag
