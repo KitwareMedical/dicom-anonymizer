@@ -8,7 +8,7 @@ from pydicom.config import settings, IGNORE
 from pydicom.data import get_testdata_files
 
 from dicomanonymizer.simpledicomanonymizer import anonymize_dataset
-from dicomanonymizer import dicomfields
+from dicomanonymizer.dicom_anonymization_databases import dicomfields_2023
 
 # Ignore warnings from pydicom validation
 settings.writing_validation_mode = IGNORE
@@ -51,7 +51,7 @@ def orig_anon_dataset(request):
 
 def test_deleted_tags_are_removed(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
-    deleted_tags = dicomfields.X_TAGS
+    deleted_tags = dicomfields_2023.X_TAGS
 
     for tt in deleted_tags:  # sourcery skip: no-loop-in-tests
         if (
@@ -66,12 +66,12 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
 
 
 changed_tags = (
-    dicomfields.U_TAGS
-    + dicomfields.D_TAGS
-    + dicomfields.Z_D_TAGS
-    + dicomfields.X_D_TAGS
-    + dicomfields.X_Z_D_TAGS
-    + dicomfields.X_Z_U_STAR_TAGS
+    dicomfields_2023.U_TAGS
+    + dicomfields_2023.D_TAGS
+    + dicomfields_2023.Z_D_TAGS
+    + dicomfields_2023.X_D_TAGS
+    + dicomfields_2023.X_Z_D_TAGS
+    + dicomfields_2023.X_Z_U_STAR_TAGS
 )
 
 empty_values = (0, "", "00010101", "000000.00", "ANONYMIZED")
@@ -104,7 +104,7 @@ def test_changed_tags_are_replaced(orig_anon_dataset):
             ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value} not replaced"
 
 
-empty_tags = dicomfields.Z_TAGS + dicomfields.X_Z_TAGS
+empty_tags = dicomfields_2023.Z_TAGS + dicomfields_2023.X_Z_TAGS
 
 
 def is_elem_empty(elem) -> bool:

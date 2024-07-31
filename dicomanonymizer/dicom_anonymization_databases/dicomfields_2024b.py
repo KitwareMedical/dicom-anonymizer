@@ -1,6 +1,6 @@
 # Tags anonymized in DICOM standard
 # Documentation for groups meaning can be found in default associated actions.
-# http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1
+# https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_e.html
 
 # Replaced tags
 D_TAGS = [
@@ -117,7 +117,6 @@ Z_TAGS = [
     (0x0040, 0x0562),  # Issuer of the Specimen Identifier Sequence
     (0x3010, 0x0043),  # Manufacturer's Device Identifier
     (0x0040, 0xA082),  # Participation DateTime
-    (0x0010, 0x0020),  # Patient ID
     (0x0010, 0x0030),  # Patient's Birth Date
     (0x0010, 0x0010),  # Patient's Name
     (0x0010, 0x0040),  # Patient's Sex
@@ -265,7 +264,7 @@ X_TAGS = [
     (0x0040, 0xE004),  # HL7 Document Effective Time
     (0x0040, 0x4037),  # Human Performer's Name
     (0x0040, 0x4036),  # Human Performer's Organization
-    (0x0088, 0x0200),  # Icon Image Sequence
+    (0x0088, 0x0200),  # Icon Image Sequence(see Note 11)
     (0x0008, 0x4000),  # Identifying Comments
     (0x0020, 0x4000),  # Image Comments
     (0x0028, 0x4000),  # Image Presentation Comments
@@ -299,6 +298,12 @@ X_TAGS = [
     (0x0040, 0x2005),  # Issue Time of Imaging Service Request
     (0x0038, 0x0011),  # Issuer of Admission ID
     (0x0038, 0x0014),  # Issuer of Admission ID Sequence
+    (0x0012, 0x0022),  # Issuer of Clinical Trial Protocol ID
+    (0x0012, 0x0073),  # Issuer of Clinical Trial Series ID
+    (0x0012, 0x0032),  # Issuer of Clinical Trial Site ID
+    (0x0012, 0x0041),  # Issuer of Clinical Trial Subject ID
+    (0x0012, 0x0043),  # Issuer of Clinical Trial Subject Reading ID
+    (0x0012, 0x0055),  # Issuer of Clinical Trial Time Point ID
     (0x0010, 0x0021),  # Issuer of Patient ID
     (0x0038, 0x0061),  # Issuer of Service Episode ID
     (0x0038, 0x0064),  # Issuer of Service Episode ID Sequence
@@ -334,6 +339,7 @@ X_TAGS = [
     (0x0040, 0x2009),  # Order Enterer's Location
     (0x0400, 0x0561),  # Original Attributes Sequence
     (0x2100, 0x0070),  # Originator
+    (0x0012, 0x0023),  # Other Clinical Trial Protocol IDs Sequence
     (0x0010, 0x1000),  # Other Patient IDs
     (0x0010, 0x1002),  # Other Patient IDs Sequence
     (0x0010, 0x1001),  # Other Patient Names
@@ -397,8 +403,12 @@ X_TAGS = [
     (0x0044, 0x000B),  # Product Expiration DateTime
     (0x0008, 0x1088),  # Pyramid Description
     (0x0020, 0x0027),  # Pyramid Label
+    (0x3006, 0x004D),  # ROI Creator Sequence
+    (0x3006, 0x002D),  # ROI DateTime
     (0x3006, 0x0028),  # ROI Description
     (0x3006, 0x0038),  # ROI Generation Description
+    (0x3006, 0x004E),  # ROI Interpreter Sequence
+    (0x3006, 0x002E),  # ROI Observation DateTime
     (0x3006, 0x0088),  # ROI Observation Description
     (0x3006, 0x0085),  # ROI Observation Label
     (0x300A, 0x0004),  # RT Plan Description
@@ -589,6 +599,7 @@ Z_D_TAGS = [
     (0x0008, 0x0033),  # Content Time
     (0x0018, 0x0010),  # Contrast/Bolus Agent
     (0x0018, 0x9919),  # Instruction Performed DateTime
+    (0x0010, 0x0020),  # Patient ID
 ]
 
 # Set the value to empty according to the VR
@@ -631,7 +642,6 @@ X_D_TAGS = [
     (0x3010, 0x0077),  # Treatment Site
     (0x3008, 0x0251),  # Treatment Time
 ]
-
 
 # Replace element according to the VR
 X_Z_D_TAGS = [
