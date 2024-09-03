@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="dicom_anonymizer",  # Required
-    version="1.0.12",  # Required
+    version="1.0.13",  # Required
     author="Laurenn Lam",
     author_email="laurenn.lam@kitware.com",
     description="Program to anonymize dicom files with default and custom rules",
