@@ -7,12 +7,17 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="dicom_anonymizer",  # Required
     version="1.0.13",  # Required
     author="Laurenn Lam",
     author_email="laurenn.lam@kitware.com",
     description="Program to anonymize dicom files with default and custom rules",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/KitwareMedical/dicom-anonymizer",
     project_urls={
         "Bug Tracker": "https://github.com/KitwareMedical/dicom-anonymizer/issues",
