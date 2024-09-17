@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="dicom_anonymizer",  # Required
-    version="1.0.13",  # Required
+    version="1.0.13-1",  # Required
     author="Laurenn Lam",
     author_email="laurenn.lam@kitware.com",
     description="Program to anonymize dicom files with default and custom rules",
