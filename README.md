@@ -21,6 +21,9 @@ Dicom fields are separated into different groups. Each groups will be anonymized
 | X_Z_U_STAR_TAGS | delete_or_empty_or_replace_UID | If it's a UID, then all numbers are randomly replaced. Else, replace with a zero length value, or a non-zero length value that may be a dummy value and consistent with the VR**|
 | ALL_TAGS | | Contains all previous defined tags
 
+## Quirks
+
+`dicom-anonymizer` is designed to retain date information within DICOM files, and will anonymize them rather than removing them entirely. This approach is taken to prevent potential crashes in certain applications that rely on these dates to work. This behavior complies with the DICOM standard, as mentioned in section [E.3.6](https://dicom.nema.org/medical/dicom/current/output/html/part15.html#sect_E.3.6).
 
 # How to install it?
 
