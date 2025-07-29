@@ -477,10 +477,13 @@ def anonymize_dataset(
 
         def range_callback(dataset, data_element):
             if (
-                data_element.tag.group & tag[2] == tag[0]
-                and data_element.tag.element & tag[3] == tag[1]
+                data_element.tag.group & tag[2] == tag[0] & tag[2]
+                and data_element.tag.element & tag[3] == tag[1] & tag[3]
             ):
-                action(dataset, (data_element.tag.group, data_element.tag.element))
+                tag_tuple = (data_element.tag.group, data_element.tag.element)
+                action(dataset, tag_tuple)
+                if dataset.get(tag_tuple) and data_element.is_private:
+                    private_tags.append(get_private_tag(dataset, tag_tuple))
 
         element = None
 
@@ -499,10 +502,12 @@ def anonymize_dataset(
                 action(dataset.file_meta, tag)
             else:
                 action(dataset, tag)
+
             try:
                 element = dataset.get(tag)
             except KeyError:
                 print("Cannot get element from tag: ", tag_to_hex_strings(tag))
+                continue
 
             # Get private tag to restore it later
             if element and element.tag.is_private:

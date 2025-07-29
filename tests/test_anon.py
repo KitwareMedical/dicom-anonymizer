@@ -1,4 +1,5 @@
 import copy
+import pydicom
 import pytest
 import warnings
 
@@ -8,7 +9,7 @@ from pydicom import dcmread
 from pydicom.config import settings, IGNORE
 from pydicom.data import get_testdata_files
 
-from dicomanonymizer.simpledicomanonymizer import anonymize_dataset
+from dicomanonymizer.simpledicomanonymizer import anonymize_dataset, keep
 from dicomanonymizer.dicom_anonymization_databases import dicomfields_2023
 
 # Ignore warnings from pydicom validation
@@ -50,6 +51,34 @@ def orig_anon_dataset(request):
     return (orig_ds, anon_ds)
 
 
+@pytest.fixture
+def dataset_with_private_fields():
+    fields = [
+        {
+            "id": (0x2001, 0x0010),
+            "type": "LO",
+            "value": "Tag creator",
+        },
+        {  # Replaced with empty value
+            "id": (0x2001, 0x1001),
+            "type": "FL",
+            "value": 0,
+        },
+        {  # Replaced with empty value
+            "id": (0x2001, 0x0011),
+            "type": "LO",
+            "value": "Tag creator 2",
+        },
+    ]
+
+    data = pydicom.Dataset()
+
+    for field in fields:  # sourcery skip: no-loop-in-tests
+        data.add_new(field["id"], field["type"], field["value"])
+
+    return data
+
+
 def test_deleted_tags_are_removed(orig_anon_dataset):
     orig_ds, anon_ds = orig_anon_dataset
     deleted_tags = dicomfields_2023.X_TAGS
@@ -61,9 +90,9 @@ def test_deleted_tags_are_removed(orig_anon_dataset):
             # TODO: Investigate why Date type are replaced instead of deleted
             # See issue https://github.com/KitwareMedical/dicom-anonymizer/issues/56
             if orig_ds[tt].VR != "DA":  # sourcery skip: no-conditionals-in-tests
-                assert tt not in anon_ds, (
-                    f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->{anon_ds[tt].value}"
-                )
+                assert (
+                    tt not in anon_ds
+                ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->{anon_ds[tt].value}"
 
 
 changed_tags = (
@@ -84,9 +113,9 @@ def is_elem_replaced(orig, anon) -> bool:
             for tt in changed_tags:
                 if tt in x and len(x[tt].value) > 0:
                     assert tt in y, f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value}->missing!"
-                    assert is_elem_replaced(x[tt], y[tt]), (
-                        f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} not replaced"
-                    )
+                    assert is_elem_replaced(
+                        x[tt], y[tt]
+                    ), f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} not replaced"
         return True
 
     return orig.value != anon.value if orig.value not in empty_values else True
@@ -97,12 +126,12 @@ def test_changed_tags_are_replaced(orig_anon_dataset):
 
     for tt in changed_tags:  # sourcery skip: no-loop-in-tests
         if tt in orig_ds:  # sourcery skip: no-conditionals-in-tests
-            assert tt in anon_ds, (
-                f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->missing!"
-            )
-            assert is_elem_replaced(orig_ds[tt], anon_ds[tt]), (
-                f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value} not replaced"
-            )
+            assert (
+                tt in anon_ds
+            ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value}->missing!"
+            assert is_elem_replaced(
+                orig_ds[tt], anon_ds[tt]
+            ), f"({tt[0]:04X},{tt[1]:04x}):{orig_ds[tt].value} not replaced"
 
 
 empty_tags = dicomfields_2023.Z_TAGS + dicomfields_2023.X_Z_TAGS
@@ -113,9 +142,9 @@ def is_elem_empty(elem) -> bool:
         for x in elem.value:
             for tt in empty_tags:
                 if tt in x and len(x[tt].value) > 0:
-                    assert is_elem_empty(x[tt]), (
-                        f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} is not empty"
-                    )
+                    assert is_elem_empty(
+                        x[tt]
+                    ), f"({tt[0]:04X},{tt[1]:04x}):{x[tt].value} is not empty"
         return True
 
     return elem.value in empty_values
@@ -128,6 +157,35 @@ def test_empty_tags_are_emptied(orig_anon_dataset):
         if (
             tt in orig_ds and len(orig_ds[tt].value) > 0
         ):  # sourcery skip: no-conditionals-in-tests
-            assert is_elem_empty(anon_ds[tt]), (
-                f"({tt[0]:04X},{tt[1]:04x}):{anon_ds[tt].value} is not empty"
-            )
+            assert is_elem_empty(
+                anon_ds[tt]
+            ), f"({tt[0]:04X},{tt[1]:04x}):{anon_ds[tt].value} is not empty"
+
+
+def test_private_tags_are_removed(dataset_with_private_fields):
+    anonymize_dataset(dataset_with_private_fields)
+
+    assert (0x2001, 0x0010) not in dataset_with_private_fields
+    assert (0x2001, 0x1001) not in dataset_with_private_fields
+
+
+def test_private_tags_can_be_kept(dataset_with_private_fields):
+    anonymize_dataset(
+        dataset_with_private_fields,
+        extra_anonymization_rules={(0x2001, 0x0010): keep, (0x2001, 0x1001): keep},
+    )
+
+    assert (0x2001, 0x0010) in dataset_with_private_fields
+    assert (0x2001, 0x1001) in dataset_with_private_fields
+    assert (0x2001, 0x0011) not in dataset_with_private_fields
+
+
+def test_private_tags_can_be_kept_with_range(dataset_with_private_fields):
+    anonymize_dataset(
+        dataset_with_private_fields,
+        extra_anonymization_rules={
+            (0x2001, 0x1001, 0xFFFF, 0xFF00): keep,
+        },
+    )
+
+    assert (0x2001, 0x1001) in dataset_with_private_fields
